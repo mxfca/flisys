@@ -61,9 +61,18 @@ COPY ../logrotate/flisys.conf /etc/logrotate.d/
 COPY ../../src/ /var/www/flisys/
 
 # Set last permissions and configs
+RUN /usr/bin/openssl req -config /etc/ssl/gen.cert -x509 -nodes -days 90 -newkey rsa:2048 -keyout /etc/ssl/flisys.key -out /etc/ssl/flisys.crt \
+		&& rm -f /etc/ssl/gen.cert \
+		&& ln -s /etc/apache2/conf-available/security.conf /etc/apache2/conf-enabled/security.conf \
+		&& ln -s /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-enabled/000-default.conf \
+		&& chown -R 0:2001 /etc/apache2/certs \
+		&& chown -R 2001:2001 /var/www/flisys \
+		&& chmod -R 775 /etc/apache2/certs \
+		&& chmod -R 750 /var/www/flisys \
+		&& chmod +x /usr/local/sbin/dockerStart.sh
 
 # Expose ports
 EXPOSE 80
 EXPOSE 443
 
-ENTRYPOINT [ "" ]
+ENTRYPOINT [ "/usr/local/sbin/dockerStart.sh" ]
