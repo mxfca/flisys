@@ -1,6 +1,8 @@
 # vim:set ft=dockerfile:
 FROM debian:latest
 
+LABEL flisys_version="4.0.0"
+
 # install system and required tolls
 RUN apt-get update && apt-get install -y --no-install-recomends \
 	apache2 \
