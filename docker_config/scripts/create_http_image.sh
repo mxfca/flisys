@@ -56,6 +56,9 @@ DOCKER_FILE="${HTTP_PATH}/Dockerfile"
 function main() {
 	local valid_path
 	local image_main_version
+	local user_choice
+
+	user_choice=''
 
 	check_bash_version
 
@@ -90,7 +93,23 @@ function main() {
 	fi
 
 	# Check if already have an image at same version
-	# if positive, ask to delete it first (including its containers)
+	if test ! -z "$(check_image_exists "${IMAGE_HTTP}")"; then
+		# ask to delete it first (including its containers)
+		ask_for_delete
+
+		# Check if user aswered it
+		if test -z "${user_choice}"; then
+			echo "You must choose a valid option, otherwise can not proceed. Exiting..."
+			exit 1
+		elif test "${user_choice}" = "n"; then
+			echo -n "You choosed not delete an image of FliSys HTTP Service that is at same version. "
+			echo "In this case, it is impossible to proceed once it will be overwritten. Exiting..."
+			exit 0
+		fi
+
+		delete_image "${IMAGE_HTTP}"
+	fi
+	
 
 	# create a new image
 
