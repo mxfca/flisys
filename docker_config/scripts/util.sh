@@ -203,10 +203,9 @@ function ask_for_delete() {
 
 # Delete a Docker Image and its containers
 function delete_image() {
-  local flisys_image
   local image_version
+  local flisys_image
   local image_id
-  local image_sha256_raw
   local image_sha256
 
   # check if have something to process
@@ -218,13 +217,8 @@ function delete_image() {
   # set image version target
   image_version="${DOCKERF_VER_MAJOR}.${DOCKERF_VER_MID}.${DOCKERF_VER_MINOR}"
 
-  # get image
-  while IFS= read -r LINE; do
-    if test "$(echo "${LINE}" | awk '{ print $2 }')" = "${image_version}"; then
-      flisys_image="${LINE}"
-      break
-    fi
-  done <<< "$(eval ""${BIN_DOCKER}" images 2>/dev/null" | grep -i "${1}")"
+  # check if image exists
+  flisys_image="$(get_docker_image_name "${image_version}")"
 
   # check if image was found
   if test -z "${flisys_image}"; then
@@ -232,41 +226,73 @@ function delete_image() {
     exit 1
   fi
 
-  # get image id
+  # extract image id
   image_id="$(echo "${flisys_image}" | awk '{ print $3 }')"
   if test -z "${image_id}"; then
     echo "Failed to get Image ID from ${1}. Exiting..."
     exit 1
   fi
 
-  # get image sha256
-  image_sha256_raw="$(eval ""${BIN_DOCKER}" inspect "${image_id}" 2>/dev/null" | grep -i "id")"
-  if test -z "${image_sha256_raw}"; then
-    echo "Failed to get SHA256 from ${1} image. Exiting..."
-    exit 1
-  fi
-
-  # apply filter
-  image_sha256="$(filter_image_sha256 "${image_sha256_raw}")"
-
-  # check if have containers
-  # count how many container this image have
-  # if have no containers, just drop this section going directly to image delete
-
-  # ///////////////////////////////////////
+  # get image id-sha256
+  image_sha256="$(get_docker_image_idsha256 "${image_id}")"
 
   # get containers
   while IFS= read -r CONTAINER; do
-    delete_container "${CONTAINER}"
+    if test ! -z "${CONTAINER}"; then
+      # delete all containers found
+      delete_container "${CONTAINER}"
+    fi
   done <<< "$(get_containers "${image_sha256}")"
+}
 
-  # delete image
+# @brief Get Docker Image basic data that corresponds to the requested version
+# @param String. Image version: xx.xx.xx
+# @return String. Docker Image basic data when success
+function get_docker_image_name() {
+  local flisys_image
 
-  echo "${1}"
+  # check if have something to process
+  if test "${#}" -eq 0; then
+    echo "Impossible to get Docker Image ID. Image Version not informed. Exiting..."
+    exit 1
+  elif test ! -z "$(echo "${1}" | grep -vE '^([0-9]{1,3}\.)+[0-9]+$')"; then
+    echo "Invalid parameter: version. Must be [0-9].[0-9].[0-9]. Exiting..."
+    exit 1
+  fi
+
+  # get image data
+  while IFS= read -r LINE; do
+    if test "$(echo "${LINE}" | awk '{ print $2 }')" = "${1}"; then
+      flisys_image="${LINE}"
+      break
+    fi
+  done <<< "$(eval ""${BIN_DOCKER}" images 2>/dev/null" | grep -i "${1}")"
+
+  # finish
   echo "${flisys_image}"
-  echo "${image_id}"
-  echo "${image_sha256}"
+}
 
+# @brief Extract ID-SHA256 from an specific image
+# @param String. Docker Image ID
+# @return String. Image ID-SHA256 of the requested image when success
+function get_docker_image_idsha256() {
+  local image_sha256_raw
+
+  # check if have something to process
+  if test "${#}" -eq 0; then
+    echo "Impossible to get Docker Image ID-SHA256. ImageID not informed. Exiting..."
+    exit 1
+  fi
+
+  # get image sha256
+  image_sha256_raw="$(eval ""${BIN_DOCKER}" inspect "${1}" 2>/dev/null" | grep -i "id")"
+  if test -z "${image_sha256_raw}"; then
+    echo "Failed to get ID-SHA256 from ${1} image. Exiting..."
+    exit 1
+  fi
+
+  # apply filter and return
+  filter_image_sha256 "${image_sha256_raw}"
 }
 
 # Remove unused characters
@@ -327,8 +353,9 @@ function get_containers() {
         to_response="$(echo "${to_response}\n${container_id}")"
       fi
     fi
-  done <<< "$(eval ""${BIN_DOCKER}" ps -a 2>/dev/null" | grep -iv "container id")"
+  done <<< "$(eval ""${BIN_DOCKER}" ps -a 2>/dev/null" | grep -iv 'container id')"
 
+  # return
   echo -e "${to_response}"
 }
 

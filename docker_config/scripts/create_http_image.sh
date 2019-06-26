@@ -110,7 +110,6 @@ function main() {
 		delete_image "${IMAGE_HTTP}"
 	fi
 	
-
 	# create a new image
 
 	# display docker images to evidence the creation of new image
