@@ -243,6 +243,9 @@ function delete_image() {
       delete_container "${CONTAINER}"
     fi
   done <<< "$(get_containers "${image_sha256}")"
+
+  # delete image
+  delete_docker_image "${image_id}"
 }
 
 # @brief Get Docker Image basic data that corresponds to the requested version
@@ -370,6 +373,34 @@ function delete_container() {
   if test "$(eval ""${BIN_DOCKER}" stop "${1}" >/dev/null 2>&1 && "${BIN_DOCKER}" rm "${1}" >/dev/null 2>&1; echo "${?}"")" -eq 0; then
     echo "Container ${1} deleted."
   fi
+}
+
+# @brief Delete a Docker Image
+# @param String. Image ID to be deleted
+# @return void.
+function delete_docker_image() {
+  # check if have something to process
+  if test "${#}" -eq 0; then
+    echo "Impossible to delete Docker Image. Invalid parameter: Image ID. Exiting..."
+    exit 1
+  fi
+
+  # execute and return
+  echo "$(eval "${BIN_DOCKER} rmi "${1}" 2>&1")"
+}
+
+# @brief Build a new Docker Image
+# @param
+#     imageName: String. The name of the new docker image
+#     imageVersion: String. The version of the new docker image. Format: [0-9].[0-9].[0-9]
+function docker_build_image() {
+  # check if have something to process
+  if test "${#}" -eq 0; then
+    echo "Impossible to generate a new Docker Image. Invalid parameter: ImageName, ImageVersion. Exiting..."
+    exit 1
+  fi
+
+  
 }
 
 # Export Global Functions

@@ -111,6 +111,7 @@ function main() {
 	fi
 	
 	# create a new image
+	docker_build_image "${IMAGE_HTTP}" "${image_main_version}"
 
 	# display docker images to evidence the creation of new image
 
