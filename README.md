@@ -13,4 +13,5 @@ You are free to contribuite with this project. There is many ways as follow:
 - **Testing**: You can test a new version of FliSys (pre-stable) and tell us what is not working, as well as report your dificults to deploy and/or run the system.
 - **Reviewing**: We need code reviwers for approval new codes and/or improvements on existing codes.
 - **Coding**: If you have any knowledge level on coding any tecnhology used by FliSys, come with us!
+  * Check our [Developer Guide](https://github.com/mxfca/flisys/wiki/Developer-Guide) to learn more.
 - **Master Contribuitor**: If you have more free time that to help us, you can be a Master Contribuitor doing all of these items above.
