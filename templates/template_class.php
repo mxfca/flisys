@@ -42,47 +42,47 @@
  * @method integer multi(integer $base, integer $multi) Multiply two numbers
  */
 class tpt_class_name {
-    /** @var object|null contains database class object */
-    protected $db = null;
+  /** @var object|null contains database class object */
+  protected $db = null;
 
-    /**
-     * A short description (must finish using period).
-     * A long description using multiline (if necessary multiline use)
-     * @author Name <email@email.com>
-     * @access public
-     * @param object $dbObj Database object. Default is null.
-     * @return void
-     */
-    function __contruct($dbObj = null) {
-        $this->db = $db;
-    }
+  /**
+   * A short description (must finish using period).
+   * A long description using multiline (if necessary multiline use)
+   * @author Name <email@email.com>
+   * @access public
+   * @param object $dbObj Database object. Default is null.
+   * @return void
+   */
+  function __contruct($dbObj = null) {
+    $this->db = $db;
+  }
 
-    /**
-     * A short description (must finish using period).
-     * A long description using multiline (if necessary multiline use)
-     * @author Name <email@email.com>
-     * @access protected
-     * @param integer $base Number to be incremented
-     * @param integer $add Number to increment
-     * @return integer
-     */
-    protected function sum($base = 0, $add = 0) {
-        // must have validation if all parameters is integer before proceed
-        return $base + $add;
-    }
+  /**
+   * A short description (must finish using period).
+   * A long description using multiline (if necessary multiline use)
+   * @author Name <email@email.com>
+   * @access protected
+   * @param integer $base Number to be incremented
+   * @param integer $add Number to increment
+   * @return integer
+   */
+  protected function sum($base = 0, $add = 0) {
+    // must have validation if all parameters is integer before proceed
+    return $base + $add;
+  } 
 
-    /**
-     * A short description (must finish using period).
-     * A long description using multiline (if necessary multiline use)
-     * @author Name <email@email.com>
-     * @access private
-     * @param integer $base Number to be multiplied
-     * @param integer $multi Number to multiply
-     * @return integer
-     */
-    private function multi($base = 0, $multi = 0) {
-        // must have validation if all parameters is integer before proceed
-        return $base * $multi;
-    }
+  /**
+   * A short description (must finish using period).
+   * A long description using multiline (if necessary multiline use)
+   * @author Name <email@email.com>
+   * @access private
+   * @param integer $base Number to be multiplied
+   * @param integer $multi Number to multiply
+   * @return integer
+   */
+  private function multi($base = 0, $multi = 0) {
+    // must have validation if all parameters is integer before proceed
+    return $base * $multi;
+  }
 }
 ?>
