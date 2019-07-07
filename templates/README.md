@@ -5,7 +5,9 @@ Here you can find the templates of mainly files in order to help you to start. T
 ## Class Template
 
 **Filename**: template_class.php
+
 **Destination Path**: /src/include
+
 **Documentation Comments**: Doxygen format
 
 This file is used as template for new classes, just copy it to destination path renaming as **inc_<class_name>.php**.
