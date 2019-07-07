@@ -27,7 +27,7 @@ This file can contains HTML tags, Fonts imports, CSS imports and calls, PHP Clas
 ## Support Page Template
 
 **Filename**: template_support.php  
-**Destination Path**: /src
+**Destination Path**: /src  
 **Documentation Comments**: Doxygen format
 
 This file is used as template for new support pages, just copy it to destination path renaming as **page_title_support.php**.
