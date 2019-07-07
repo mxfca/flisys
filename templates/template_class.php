@@ -28,28 +28,32 @@
  * along with FliSys. If not, see <https://www.gnu.org/licenses/>.
  * *************************************************************************** *
  * @author Your Name
- * @license https://www.gnu.org/licenses/gpl-3.0.html GNU General Public License 3
+ * @copyright GNU General Public License 3
  * *************************************************************************** *
  */
 
 /**
- * A short description of the purpose of this class in one line only (must finish using period).
- * A long
- * description
- * using multiline (if necessary multiline use)
- * @method void __construct(object $dbObj)
- * @method integer sum(integer $base, integer $add) Sum two numbers
- * @method integer multi(integer $base, integer $multi) Multiply two numbers
+ * @class tpt_class_name
+ * @brief A short description of the purpose of this class in one line only
+ * @details A long description
+ *          using multiline
+ *          (if necessary multiline use)
  */
 class tpt_class_name {
-  /** @var object|null contains database class object */
+  /** -- Remove this line -- Declare and document all class variables here --
+   * @var object $db
+   * @brief Contains database class object
+   * @var integer $count
+   * @brief A counter for...
+   */
   protected $db = null;
+  protected $count = 0;
 
   /**
-   * A short description (must finish using period).
-   * A long description using multiline (if necessary multiline use)
-   * @author Name <email@email.com>
-   * @access public
+   * @brief Class initialization
+   * @details A long description
+   *          using multiline
+   *          (if necessary multiline use)
    * @param object $dbObj Database object. Default is null.
    * @return void
    */
@@ -58,30 +62,30 @@ class tpt_class_name {
   }
 
   /**
-   * A short description (must finish using period).
-   * A long description using multiline (if necessary multiline use)
-   * @author Name <email@email.com>
-   * @access protected
+   * @brief A short description of this method
+   * @details A long description
+   *          using multiline
+   *          (if necessary multiline use)
    * @param integer $base Number to be incremented
    * @param integer $add Number to increment
    * @return integer
    */
   protected function sum($base = 0, $add = 0) {
-    // must have validation if all parameters is integer before proceed
+    // must have validation if all parameters is OK before proceed
     return $base + $add;
   } 
 
   /**
-   * A short description (must finish using period).
-   * A long description using multiline (if necessary multiline use)
-   * @author Name <email@email.com>
-   * @access private
+   * @brief A short description
+   * @details A long description
+   *          using multiline
+   *          (if necessary multiline use)
    * @param integer $base Number to be multiplied
    * @param integer $multi Number to multiply
    * @return integer
    */
   private function multi($base = 0, $multi = 0) {
-    // must have validation if all parameters is integer before proceed
+    // must have validation if all parameters is OK before proceed
     return $base * $multi;
   }
 }
