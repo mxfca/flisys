@@ -32,10 +32,19 @@ This file can contains HTML tags, Fonts imports, CSS imports and calls, PHP Clas
 
 This file is used as template for new support pages, just copy it to destination path renaming as **page_title_support.php**.
 
-This file receive actions mainly from javascripts files, but also can be ordinary pages. It can only contains PHP, such as: imports of classes, classes declarations, initializations and its methods calls, also can contain a small portion of logic in order to route actions received.
+This file receive actions mainly from javascripts files, but also can be ordinary pages. It can only contains PHP, such as: imports of classes, classes declarations, initializations and its methods calls, also can contain a small portion of logic in order to route actions received and send responses to the caller.
 
 ## Javascript Template
 
+**Filename**: template_javascript.js  
+**Destination Path**: /src/include/js  
+**Documentation Comments**: Doxygen format
+
+This file is used as template for new javascripts files, just copy it to destination path renaming as **title.js**.
+
+This file is responsible for the communication between ordinary and support pages, it listen for actions (triggers) from ordinary pages and send it (data) to support pages to be processed, as well as the inverse way is true, get responses from support pages and send it to ordinary pages.
+
+Another use of javascript files is to create some visual effects for users and/or pages/data transitions, in this case there is no communications between ordinary and support pages, acting as isolated file.
 
 ## Shell Script Template
 
