@@ -27,12 +27,12 @@ This file can contains HTML tags, Fonts imports, CSS imports and calls, PHP Clas
 ## Support Page Template
 
 **Filename**: template_support.php  
-**Destination Path**: /src  
+**Destination Path**: /src/support  
 **Documentation Comments**: Doxygen format
 
 This file is used as template for new support pages, just copy it to destination path renaming as **page_title_support.php**.
 
-This file receive actions mainly from javascripts files, but also can be ordinary pages. It can only contains PHP, such as: imports of classes, classes declarations, initializations and its methods calls, also can contain a small portion of logic.
+This file receive actions mainly from javascripts files, but also can be ordinary pages. It can only contains PHP, such as: imports of classes, classes declarations, initializations and its methods calls, also can contain a small portion of logic in order to route actions received.
 
 ## Javascript Template
 
