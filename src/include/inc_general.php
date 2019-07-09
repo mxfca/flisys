@@ -154,22 +154,26 @@ class flisys {
    * @return void
    */
   private function printJS($to_header = false, $add_jquery = true, $add_semantic = true) {
-    // add jquery
+    // print jquery
     if ( $to_header && $add_jquery ) {
       echo "\t\t" . '<script src="' . $this->jsPath . DIRECTORY_SEPARATOR . 'jquery.min.js"></script>' . "\n";
     }
 
-    // add semantic ui js
+    // print semantic ui js
     if ( $to_header && $add_semantic ) {
       echo "\t\t" . '<script src="' . $this->semanticPath . DIRECTORY_SEPARATOR . 'semantic.min.js"></script>' . "\n";
     }
 
-    // check if have something else to add
+    // check if have something else to print
     if ( !is_array($this->jsFiles) || count($this->jsFiles) < 1 ) return;
 
-    // add additional js files
+    // print additional js files
     foreach ($this->jsFiles as $key => $value) {
-      echo "\t\t" . '<script src="' . $this->jsPath . DIRECTORY_SEPARATOR . $value . '"></script>' . "\n";
+      if ( $to_header && !$value[1] ) {
+        echo "\t\t" . '<script src="' . $this->jsPath . DIRECTORY_SEPARATOR . $value[0] . '"></script>' . "\n";
+      } elseif ( !$to_header && $value[1] ) {
+        echo "\t" . '<script src="' . $this->jsPath . DIRECTORY_SEPARATOR . $value[0] . '"></script>' . "\n";
+      }
     }
   }
 
@@ -183,16 +187,17 @@ class flisys {
     echo "<!DOCTYPE html>\n<html>\n\t<head>\n";
     echo "\t\t<meta charset=\"UTF-8\">\n";
     
-    // add title page
+    // print title page
+    // @todo print title page
 
-    // Add default page config
+    // print default page config
 		echo "\t\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge,chrome=1\">\n";
     echo "\t\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes\">\n";
 		echo "\t\t<meta http-equiv=\"Cache-control\" content=\"no-store\">\n";
 		echo "\t\t<meta http-equiv=\"Pragma\" content=\"no-cache\">\n";
 		echo "\t\t<meta http-equiv=\"Expires\" content=\"0\">\n";
 
-    // print CSS files in the header
+    // print CSS files
     $this->printCSS($add_semantic);
 
     // print JS files in the header
