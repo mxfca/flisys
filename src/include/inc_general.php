@@ -225,6 +225,9 @@ class flisys {
     echo "</body>\n";
 
     // Close DB Connection
+    if ( !is_null($this->db) ) {
+      // @todo add close database connection here
+    }
   }
 }
 ?>
