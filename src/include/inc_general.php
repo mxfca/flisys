@@ -33,6 +33,11 @@
  */
 
 /**
+ * @brief Required class(es)
+ */
+require_once(realpath(dirname(__FILE__)) . DIRECTORY_SEPARATOR . "inc_util.php");
+
+/**
  * @class flisys
  * @brief The general purpose class for FliSys
  * @details This class is responsible for general purpose objectives, such as:
@@ -60,31 +65,34 @@ class flisys {
 
   /**
    * @brief Class initialization
-   * @param object $dbObj Database object. Default is null.
+   * @param object $db_obj Database object. Default is null.
    * @return void
    */
-  function __contruct($dbObj = null) {
-    $this->db = $dbObj;
+  function __contruct($db_obj = null) {
+    $this->db = $db_obj;
+
+    // add default values
+    $this->addCSS("basic.css");
+    $this->addJS("jquery.min.js");
   }
 
   /**
    * @brief Add CSS file into page
    * @details Add a CSS file from /include/css into page.
    *          Just pass the filename without the path as argument.
-   * @param string $fileName
+   * @param string $file_name The CSS file to be included
    * @return bool
    */
-  public function addCSS($fileName = null) {
+  public function addCSS($file_name = null) {
     // check if have something to process
-    if ( is_null($fileName)
-          || strlen(trim($fileName)) < 5
-            || preg_match("/^[a-zA-Z0-9_\.-]+\.css$/", trim($fileName)) < 1 ) return false;
+    if ( !Util::hasContentString($file_name, 5)
+          || preg_match("/^[a-zA-Z0-9_\.-]+\.css$/", trim($file_name)) < 1 ) return false;
 
     // check if file exists
-    if ( !file_exists($this->cssPath . DIRECTORY_SEPARATOR . trim($fileName)) ) return false;
+    if ( !file_exists(realpath(dirname(__FILE__)) . $this->cssPath . DIRECTORY_SEPARATOR . trim($file_name)) ) return false;
 
     // add to array
-    $this->cssFiles[] = trim($fileName);
+    $this->cssFiles[] = trim($file_name);
 
     // finish
     return true;
@@ -94,19 +102,23 @@ class flisys {
    * @brief Add Javascript file into page
    * @details Add a Javascript file from /include/js into page.
    *          Just pass the filename without the path as argument.
-   * @param string $fileName
-   * @param boolean $toBottom
-   * @return boolean
+   * @param string $file_name The Javascript file to be included
+   * @param boolean $to_bottom If TRUE, this file will be include at the end of the page
+   * @return bool
    */
-  public function addJS($fileName = null, $toBottom = true) {
+  public function addJS($file_name = null, $to_bottom = true) {
     // check if have something to process
-    if ( is_null($fileName) || strlen(trim($fileName)) < 4 ) return false;
+    if ( !Util::hasContentString($file_name, 4)
+          || preg_match("/^[a-zA-Z0-9_\.-]+\.js$/", trim($file_name)) < 1 ) return false;
 
     // check if file exists
+    if ( !file_exists(realpath(dirname(__FILE__)) . $this->jsPath . DIRECTORY_SEPARATOR . trim($file_name)) ) return false;
 
     // add to array
+    $this->jsFiles[] = trim($file_name);
 
     // finish
+    return true;
   }
 
 
