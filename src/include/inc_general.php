@@ -56,12 +56,17 @@ class flisys {
    * @brief Relative path to reach Javascript files. Default value is using Apache Rewrite Module.
    * @var string $cssPath
    * @brief Relative path to reach CSS files. Default value is using Apache Rewrite Module.
+   * @var string $semanticPath
+   * @brief Relative path to reach Semantic UI files. Default value is using Apache Rewrite Module.
    */
   private $db = null;
   private $jsFiles = [];
   private $cssFiles = [];
   private $jsPath = DIRECTORY_SEPARATOR . "js";
   private $cssPath = DIRECTORY_SEPARATOR . "css";
+  private $semanticPath = DIRECTORY_SEPARATOR . "semantic";
+  private $semanticCSS = "semantic.min.css";
+  private $semanticJS = "semantic.min.js";
 
   /**
    * @brief Class initialization
@@ -73,7 +78,6 @@ class flisys {
 
     // add default values
     $this->addCSS("basic.css");
-    $this->addJS("jquery.min.js");
   }
 
   /**
@@ -122,9 +126,100 @@ class flisys {
     return true;
   }
 
+  /**
+   * @brief Internal use only. This method print to header all CSS files previouly added
+   * @param boolean $add_semantic
+   * @return void
+   */
+  private function printCSS($add_semantic = true) {
+    // add semantic ui css
+    if ( $add_semantic ) {
+      echo "\t\t" . '<link rel="stylesheet" type="text/css" href="' . $this->semanticPath . DIRECTORY_SEPARATOR . $this->semanticCSS . '">' . "\n";
+    }
 
-  public function printHeader() {
+    // check if have something else to add
+    if ( !is_array($this->cssFiles) || count($this->cssFiles) < 1 ) return;
 
+    // add additional css files
+    foreach ($this->cssFiles as $key => $value) {
+      echo "\t\t" . '<link rel="stylesheet" type="text/css" href="' . $this->cssPath . DIRECTORY_SEPARATOR . $value . '">' . "\n";
+    }
+  }
+
+  /**
+   * @brief Internal use only. Thie method print to header or footer all JS files previouly added
+   * @param boolean $to_header
+   * @param boolean $add_jquery
+   * @param boolean $add_semantic
+   * @return void
+   */
+  private function printJS($to_header = false, $add_jquery = true, $add_semantic = true) {
+    // add jquery
+    if ( $to_header && $add_jquery ) {
+      echo "\t\t" . '<script src="' . $this->jsPath . DIRECTORY_SEPARATOR . 'jquery.min.js"></script>' . "\n";
+    }
+
+    // add semantic ui js
+    if ( $to_header && $add_semantic ) {
+      echo "\t\t" . '<script src="' . $this->semanticPath . DIRECTORY_SEPARATOR . 'semantic.min.js"></script>' . "\n";
+    }
+
+    // check if have something else to add
+    if ( !is_array($this->jsFiles) || count($this->jsFiles) < 1 ) return;
+
+    // add additional js files
+    foreach ($this->jsFiles as $key => $value) {
+      echo "\t\t" . '<script src="' . $this->jsPath . DIRECTORY_SEPARATOR . $value . '"></script>' . "\n";
+    }
+  }
+
+  /**
+   * @brief Print HTML header to the page
+   * @param boolean $add_semantic if TRUE, will add Semantic UI framework. Default is TRUE.
+   * @return void
+   */
+  public function printHeader($add_semantic = true) {
+    // start header
+    echo "<!DOCTYPE html>\n<html>\n\t<head>\n";
+    echo "\t\t<meta charset=\"UTF-8\">\n";
+    
+    // add title page
+
+    // Add default page config
+		echo "\t\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge,chrome=1\">\n";
+    echo "\t\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes\">\n";
+		echo "\t\t<meta http-equiv=\"Cache-control\" content=\"no-store\">\n";
+		echo "\t\t<meta http-equiv=\"Pragma\" content=\"no-cache\">\n";
+		echo "\t\t<meta http-equiv=\"Expires\" content=\"0\">\n";
+
+    // print CSS files in the header
+    $this->printCSS($add_semantic);
+
+    // print JS files in the header
+    $this->printJS(true);
+
+    // Finish header
+		echo "\t</head>\n<body>\n\n";
+  }
+
+  /**
+   * @brief Print footer page and close HTML Body
+   * @return void
+   */
+  public function printFooter() {
+    // print JS files at the end of the page
+    $this->printJS();
+
+    // print modal declaration
+
+    // print footer
+
+    // Print copyright
+
+    // close HTML
+    echo "</body>\n";
+
+    // Close DB Connection
   }
 }
 ?>
