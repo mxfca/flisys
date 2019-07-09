@@ -109,13 +109,14 @@ class flisys {
   public function addJS($file_name = null, $to_bottom = true) {
     // check if have something to process
     if ( !Util::hasContentString($file_name, 4)
-          || preg_match("/^[a-zA-Z0-9_\.-]+\.js$/", trim($file_name)) < 1 ) return false;
+          || !is_bool($to_bottom)
+            || preg_match("/^[a-zA-Z0-9_\.-]+\.js$/", trim($file_name)) < 1 ) return false;
 
     // check if file exists
     if ( !file_exists(realpath(dirname(__FILE__)) . $this->jsPath . DIRECTORY_SEPARATOR . trim($file_name)) ) return false;
 
     // add to array
-    $this->jsFiles[] = trim($file_name);
+    $this->jsFiles[] = array(trim($file_name), $to_bottom);
 
     // finish
     return true;
