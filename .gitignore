@@ -1,3 +1,4 @@
 # ignore MAC OS files attributes
 .DS_Store
 **/.DS_Store
+**/.vscode
