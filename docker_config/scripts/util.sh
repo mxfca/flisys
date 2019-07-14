@@ -400,7 +400,7 @@ function docker_build_image() {
     exit 1
   fi
 
-  
+  # docker run -h "hostname" --name "container_name" -d -t -p 80:80 -p 443:443 -v /local/path:/container/path:z image
 }
 
 # Export Global Functions
