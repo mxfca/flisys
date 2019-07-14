@@ -51,6 +51,44 @@ class Util {
     return true;
   }
 
+  /**
+   * @brief This method choose a language to be used by FliSys
+   * @param string $browser_language User's browser languages
+   * @param array $supported_languages FliSys supported languages
+   * @return string Returns a string with two characters that means the language to be set. Default is "en".
+   */
+  public static function chooseLanguage($browser_language = null, $supported_languages = []) {
+    /**
+     * @var string $default_language A supported language to be setted to user. Default is English.
+     * @var array $user_languages Just a conversion to array the param $browser_language
+     */
+    $default_language = "en";
+    $user_languages = [];
 
+    // check if have something to process
+    if ( is_null($browser_language) || strlen(trim($browser_language)) < 2 ) return $default_language;
+
+    // check if have an array of supported languages
+    if ( is_null($supported_languages) || !is_array($supported_languages) || count($supported_languages) < 1 ) $supported_languages = [ $default_language ];
+
+    // check if browser have more available languages
+    if ( preg_match("/;/", trim($browser_language)) > 0 ) {
+      $user_languages = explode(";", $browser_language);
+    } else {
+      $user_languages = [ $browser_language ];
+    }
+
+    // try to find a supporte language
+    foreach ( $user_languages as $key => $value) {
+      if ( in_array(trim(substr($value, 0, 2)), $supported_languages) ) {
+        // set language
+        $default_language = trim($value);
+        break;
+      }
+    }
+
+    // finish
+    return $default_language;
+  }
 }
 ?>
