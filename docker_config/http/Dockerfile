@@ -19,6 +19,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   logrotate \
   locales \
   cron \
+  # vim must be removed in a production environment
+  vim \
   && rm -rf /var/lib/apt/lists/* \
   && /usr/bin/localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 
@@ -50,17 +52,17 @@ RUN usermod -u 2001 www-data \
   && dpkg-reconfigure -f noninteractive tzdata
 
 # Prepare Services
-RUN	/usr/sbin/a2enmod ssl rewrite php7.3 \
-  && rm -f /etc/apache2/ports.conf
+RUN	rm -f /etc/apache2/ports.conf \
   # && rm -f /etc/apache2/conf-enabled/security.conf \
-  #&& rm -f /etc/apache2/sites-enabled/* \
-  #&& rm -f /etc/apache2/sites-available/* \
+  && rm -rf /etc/apache2/sites-enabled/* \
+  && rm -rf /etc/apache2/sites-available/* \
   # && rm -f /etc/logrotate.d/apache2
+  && /usr/sbin/a2enmod ssl rewrite php7.3
 
 # Copy predefined configuration and files
 COPY ports.conf /etc/apache2/
 # COPY security.conf /etc/apache2/conf-available/
-# COPY 000-default.conf /etc/apache2/sites-available/
+COPY 000-default.conf /etc/apache2/sites-available/
 # COPY gen.cert /etc/ssl/
 # COPY ../logrotate/apache.conf /etc/logrotate.d/
 # COPY ../logrotate/flisys.conf /etc/logrotate.d/
@@ -73,7 +75,8 @@ COPY dockerStart.sh /usr/local/sbin/
 #		&& ln -s /etc/apache2/conf-available/security.conf /etc/apache2/conf-enabled/security.conf \
 #		&& ln -s /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-enabled/000-default.conf \
 #		&& chown -R 0:2001 /etc/apache2/certs \
-RUN chown 0:0 /etc/apache2/ports.conf \
+RUN ln -s /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-enabled/000-default.conf \
+  && chown 0:0 /etc/apache2/ports.conf \
   && chown -R 2001:2001 /var/www/flisys \
 # && chmod -R 775 /etc/apache2/certs \
   && chmod 644 /etc/apache2/ports.conf \
