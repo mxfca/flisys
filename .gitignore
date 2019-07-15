@@ -1,4 +1,5 @@
 # ignore MAC OS files attributes
-.DS_Store
 **/.DS_Store
+
+# ignore vscode custom configuration
 **/.vscode
