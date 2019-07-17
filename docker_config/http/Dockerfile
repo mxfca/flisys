@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # ----------------------------------------------------------------------------
 ENV LANG en_US.utf8
 ENV TZ UTC
-# To enable proxy, fill and uncomment lines below ()
+# To enable proxy, fill and uncomment lines below (https://docs.docker.com/network/proxy/#use-environment-variables)
 # ----------------------------------------------------------------------------
 # ENV HTTP_PROXY "http://proxy_server:8080"
 # ENV FTP_PROXY "http://proxy_server:8080"
@@ -60,7 +60,7 @@ RUN	rm -f /etc/apache2/ports.conf \
   # && rm -f /etc/logrotate.d/apache2
   && /usr/sbin/a2enmod ssl rewrite php7.3
 
-# Copy predefined configuration and files
+# Copy predefined configurations and files
 COPY ports.conf /etc/apache2/
 COPY security.conf /etc/apache2/conf-available/
 COPY 000-default.conf /etc/apache2/sites-available/
