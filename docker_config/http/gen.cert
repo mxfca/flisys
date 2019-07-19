@@ -1,0 +1,10 @@
+[ req ]
+distinguished_name="req_flisys"
+prompt="no"
+
+[ req_flisys ]
+C="BR"
+ST="SP"
+L="SAOPAULO"
+O="FLISYS"
+CN="github.com/mxfca/flisys"
