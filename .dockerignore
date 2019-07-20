@@ -1,0 +1,9 @@
+# ignore git stuffs
+.git
+.github
+.gitignore
+*.md
+.vscode
+
+# ignore templates
+templates
