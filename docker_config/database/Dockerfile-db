@@ -40,9 +40,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   openssl \
   logrotate \
   locales \
+  logrotate \
   && rm -rf /var/lib/apt/lists/* \
   && /usr/bin/localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
-  && rm -rf /etc/mysql/mariadb.conf.d/50-server.cnf
+  && rm -rf /etc/mysql/mariadb.conf.d/50-server.cnf \
+  && rm -rf /etc/logrotate.d/mysql-server
 
 # Declare Environment Variables
 ENV LANG en_US.utf8
@@ -50,12 +52,15 @@ ENV TZ UTC
 
 # Copy predefined configurations and files
 COPY 50-server.cnf /etc/mysql/mariadb.conf.d/
+COPY logrotate/database.conf /etc/logrotate.d/
 COPY docker_db_start.sh /usr/local/sbin/
 
 # Set last permissions
 RUN chown 0:0 /etc/mysql/mariadb.conf.d/50-server.cnf \
   && chown 0:0 /usr/local/sbin/docker_db_start.sh \
+  && chown 0:0 /etc/logrotate.d/database.conf \
   && chmod 644 /etc/mysql/mariadb.conf.d/50-server.cnf \
+  && chmod 655 /etc/logrotate.d/database.conf \
   && chmod 500 /usr/local/sbin/docker_db_start.sh
 
 # Expose port
