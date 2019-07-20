@@ -30,7 +30,7 @@
 # ########################################################################### #
 FROM debian:latest
 
-LABEL flisys_version="4.0.0"
+LABEL flisys_version="4.0.0" environment="production"
 
 # install system and required tolls
 RUN apt-get update && apt-get install -y --no-install-recommends \
