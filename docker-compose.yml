@@ -1,0 +1,64 @@
+# ########################################################################### #
+#
+# 				'########:'##:::::::'####::'######::'##:::'##::'######::
+# 				 ##.....:: ##:::::::. ##::'##... ##:. ##:'##::'##... ##:
+# 				 ##::::::: ##:::::::: ##:: ##:::..:::. ####::: ##:::..::
+# 				 ######::: ##:::::::: ##::. ######::::. ##::::. ######::
+# 				 ##...:::: ##:::::::: ##:::..... ##:::: ##:::::..... ##:
+# 				 ##::::::: ##:::::::: ##::'##::: ##:::: ##::::'##::: ##:
+# 				 ##::::::: ########:'####:. ######::::: ##::::. ######::
+# 				..::::::::........::....:::......::::::..::::::......:::
+#
+# ########################################################################### #
+# This file is part of FliSys.
+# 
+# FliSys is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version
+# 
+# FliSys is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details
+# 
+# You should have received a copy of the GNU General Public License
+# along with FliSys. If not, see <https://www.gnu.org/licenses/>.
+# ########################################################################### #
+# This file is intend to be used in a production/QA/Test environment.
+# For development purposes, use docker-compose-dev.yml.
+# ########################################################################### #
+version: "3.7"
+services:
+  flisys_web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: flisys_web:4.0.0
+    container_name: flisys_web
+    ports:
+      - "80:80"
+      - "443:443"
+    tty: true
+    networks:
+      - net_flisys
+      - default
+    depends_on:
+      - flisys_db
+
+  flisys_db:
+    build:
+      context: docker_config/database
+      dockerfile: Dockerfile-db
+    image: flisys_db:4.0.0
+    container_name: flisys_db
+    ports:
+      - "3306:3306"
+    tty: true
+    networks:
+      - net_flisys
+      - default
+
+networks:
+  net_flisys:
+    internal: true
