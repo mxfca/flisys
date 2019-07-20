@@ -1,0 +1,64 @@
+# ########################################################################### #
+#
+# 				'########:'##:::::::'####::'######::'##:::'##::'######::
+# 				 ##.....:: ##:::::::. ##::'##... ##:. ##:'##::'##... ##:
+# 				 ##::::::: ##:::::::: ##:: ##:::..:::. ####::: ##:::..::
+# 				 ######::: ##:::::::: ##::. ######::::. ##::::. ######::
+# 				 ##...:::: ##:::::::: ##:::..... ##:::: ##:::::..... ##:
+# 				 ##::::::: ##:::::::: ##::'##::: ##:::: ##::::'##::: ##:
+# 				 ##::::::: ########:'####:. ######::::: ##::::. ######::
+# 				..::::::::........::....:::......::::::..::::::......:::
+#
+# ########################################################################### #
+# This file is part of FliSys.
+# 
+# FliSys is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version
+# 
+# FliSys is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details
+# 
+# You should have received a copy of the GNU General Public License
+# along with FliSys. If not, see <https://www.gnu.org/licenses/>.
+# ########################################################################### #
+# This Dockerfile is intend to be used in a production/QA/Test environment.
+# For development purposes, use Dockerfile-dev.
+# ########################################################################### #
+FROM debian:latest
+
+LABEL flisys_version="4.0.0" environment="production"
+
+# install system and required tolls
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  mariadb-server \
+  mariadb-common \
+  mariadb-client \
+  openssl \
+  logrotate \
+  locales \
+  && rm -rf /var/lib/apt/lists/* \
+  && /usr/bin/localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
+  && rm -rf /etc/mysql/mariadb.conf.d/50-server.cnf
+
+# Declare Environment Variables
+ENV LANG en_US.utf8
+ENV TZ UTC
+
+# Copy predefined configurations and files
+COPY 50-server.cnf /etc/mysql/mariadb.conf.d/
+COPY docker_db_start.sh /usr/local/sbin/
+
+# Set last permissions
+RUN chown 0:0 /etc/mysql/mariadb.conf.d/50-server.cnf \
+  && chown 0:0 /usr/local/sbin/docker_db_start.sh \
+  && chmod 644 /etc/mysql/mariadb.conf.d/50-server.cnf \
+  && chmod 500 /usr/local/sbin/docker_db_start.sh
+
+# Expose port
+EXPOSE 3306
+
+ENTRYPOINT [ "/usr/local/sbin/docker_db_start.sh" ]
