@@ -49,6 +49,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   locales \
   cron \
   vim \
+  procps \
+  default-mysql-client \
   && rm -rf /var/lib/apt/lists/* \
   && /usr/bin/localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 
