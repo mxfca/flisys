@@ -51,10 +51,10 @@ BIN_SYSCTL="$(which systemctl)"
 
 # Check Bash version
 function check_bash_version() {
-	if test "${BASH_VERSION%%.*}" -lt "${MIN_BASH_VERSION}"; then
-		echo "FliSys Docker Images require at lease Bash version 3 to run. Exiting..."
-		exit 1
-	fi
+  if test "${BASH_VERSION%%.*}" -lt "${MIN_BASH_VERSION}"; then
+    echo "FliSys Docker Images require at least Bash version 3 to run. Exiting..."
+    exit 1
+  fi
 }
 
 # Check if a given path exists

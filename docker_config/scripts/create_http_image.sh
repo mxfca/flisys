@@ -32,7 +32,7 @@
 set -o errexit # abort on nonzero exit status
 set -o nounset # abort on unbound variable
 if test "${BASH_VERSION%%.*}" -gt '2'; then
-	set -o pipefail # do not hide errors within pipes
+  set -o pipefail # do not hide errors within pipes
 fi
 
 # Global Vars
@@ -54,73 +54,73 @@ DOCKER_FILE="${HTTP_PATH}/Dockerfile"
 # Startup function, not logic in it, just flow
 # ###########################################################################
 function main() {
-	local valid_path
-	local image_main_version
-	local user_choice
+  local valid_path
+  local image_main_version
+  local user_choice
 
-	user_choice=''
+  user_choice=''
 
-	check_bash_version
+  check_bash_version
 
-	if test -z "$(path_exists "${HTTP_PATH}")"; then
-		echo "Path to FliSys HTTP Service not found. Exiting..."
-		exit 1
-	fi
+  if test -z "$(path_exists "${HTTP_PATH}")"; then
+    echo "Path to FliSys HTTP Service not found. Exiting..."
+    exit 1
+  fi
 
-	if test -z "$(file_exists "${DOCKER_FILE}")"; then
-		echo "Dockerfile is missing in HTTP Service path. Exiting..."
-		exit 1
-	fi
+  if test -z "$(file_exists "${DOCKER_FILE}")"; then
+    echo "Dockerfile is missing in HTTP Service path. Exiting..."
+    exit 1
+  fi
 
-	image_main_version="$(find_dockerfile_version "${DOCKER_FILE}")"
-	if test -z "${image_main_version}"; then
-		echo "Invalid Dockerfile version of image. Exiting..."
-		exit 1
-	fi
+  image_main_version="$(find_dockerfile_version "${DOCKER_FILE}")"
+  if test -z "${image_main_version}"; then
+    echo "Invalid Dockerfile version of image. Exiting..."
+    exit 1
+  fi
 
-	split_dockerfile_version "${image_main_version}"
+  split_dockerfile_version "${image_main_version}"
 
-	if test -z "${BIN_DOCKER}"; then
-		echo "Docker service is not installed or not in your environment variable. Exiting..."
-		exit 1
-	fi
+  if test -z "${BIN_DOCKER}"; then
+    echo "Docker service is not installed or not in your environment variable. Exiting..."
+    exit 1
+  fi
 
-	if test -z "$(check_docker_service)"; then
-		echo "Docker service is not running. Please, start it before proceed."
-		echo "Try this command as root: systemctl start docker"
-		echo "Exiting..."
-		exit 1
-	fi
+  if test -z "$(check_docker_service)"; then
+    echo "Docker service is not running. Please, start it before proceed."
+    echo "Try this command as root: systemctl start docker"
+    echo "Exiting..."
+    exit 1
+  fi
 
-	# Check if already have an image at same version
-	if test ! -z "$(check_image_exists "${IMAGE_HTTP}")"; then
-		# ask to delete it first (including its containers)
-		ask_for_delete
+  # Check if already have an image at same version
+  if test ! -z "$(check_image_exists "${IMAGE_HTTP}")"; then
+    # ask to delete it first (including its containers)
+    ask_for_delete
 
-		# Check if user aswered it
-		if test -z "${user_choice}"; then
-			echo "You must choose a valid option, otherwise can not proceed. Exiting..."
-			exit 1
-		elif test "${user_choice}" = "n"; then
-			echo -n "You choosed not delete an image of FliSys HTTP Service that is at same version. "
-			echo "In this case, it is impossible to proceed once it will be overwritten. Exiting..."
-			exit 0
-		fi
+    # Check if user aswered it
+    if test -z "${user_choice}"; then
+      echo "You must choose a valid option, otherwise can not proceed. Exiting..."
+      exit 1
+    elif test "${user_choice}" = "n"; then
+      echo -n "You choosed not delete an image of FliSys HTTP Service that is at same version. "
+      echo "In this case, it is impossible to proceed once it will be overwritten. Exiting..."
+      exit 0
+    fi
 
-		delete_image "${IMAGE_HTTP}"
-	fi
-	
-	# create a new image
-	docker_build_image "${IMAGE_HTTP}" "${image_main_version}"
+    delete_image "${IMAGE_HTTP}"
+  fi
+  
+  # create a new image
+  docker_build_image "${IMAGE_HTTP}" "${image_main_version}"
 
-	# display docker images to evidence the creation of new image
+  # display docker images to evidence the creation of new image
 
-	echo "${image_main_version}"
-	echo "${DOCKERF_VER_MAJOR}"
-	echo "${DOCKERF_VER_MID}"
-	echo "${DOCKERF_VER_MINOR}"
+  echo "${image_main_version}"
+  echo "${DOCKERF_VER_MAJOR}"
+  echo "${DOCKERF_VER_MID}"
+  echo "${DOCKERF_VER_MINOR}"
 
-	echo "all good"
+  echo "all good"
 }
 
 # Start the script
