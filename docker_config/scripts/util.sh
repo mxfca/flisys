@@ -353,7 +353,7 @@ function get_containers() {
       if test -z "${to_response}"; then
         to_response="${container_id}"
       else
-        to_response="$(echo "${to_response}\n${container_id}")"
+        to_response="$(printf "%s\n%s" "${to_response}" "${container_id}")"
       fi
     fi
   done <<< "$(eval ""${BIN_DOCKER}" ps -a 2>/dev/null" | grep -iv 'container id')"
