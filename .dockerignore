@@ -3,7 +3,12 @@
 .github
 .gitignore
 *.md
-.vscode
+
+# ignore MAC OS files attributes
+**/.DS_Store
+
+# ignore vscode custom configuration
+**/.vscode
 
 # ignore templates
 templates
