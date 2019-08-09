@@ -44,10 +44,14 @@ MIN_BASH_VERSION=3
 DOCKERF_VER_MAJOR=''
 DOCKERF_VER_MID=''
 DOCKERF_VER_MINOR=''
-IMAGE_HTTP='flisys/http'
-IMAGE_DATABASE='flisys/database'
-BIN_DOCKER="$(which docker)"
-BIN_SYSCTL="$(which systemctl)"
+
+# Set default values for external
+export IMAGE_HTTP='flisys/http'
+export IMAGE_DATABASE='flisys/database'
+BIN_DOCKER="$(command -v docker)"
+export BIN_DOCKER
+BIN_SYSCTL="$(command -v systemctl)"
+export BIN_SYSCTL
 
 # Check Bash version
 function check_bash_version() {
@@ -164,7 +168,7 @@ function check_image_exists() {
   # set image version target
   image_version="${DOCKERF_VER_MAJOR}.${DOCKERF_VER_MID}.${DOCKERF_VER_MINOR}"
 
-  flisys_images="$(eval ""${BIN_DOCKER}" images 2>/dev/null" | grep -i "${1}")"
+  flisys_images="$(eval "${BIN_DOCKER}" images 2>/dev/null | grep -i "${1}")"
   if test ! -z "${flisys_images}"; then
     while IFS= read -r LINE; do
       if test "$(echo "${LINE}" | awk '{ print $2 }')" = "${image_version}"; then
@@ -269,7 +273,7 @@ function get_docker_image_name() {
       flisys_image="${LINE}"
       break
     fi
-  done <<< "$(eval ""${BIN_DOCKER}" images 2>/dev/null" | grep -i "${1}")"
+  done <<< "$(eval "${BIN_DOCKER}" images 2>/dev/null | grep -i "${1}")"
 
   # finish
   echo "${flisys_image}"
@@ -288,7 +292,7 @@ function get_docker_image_idsha256() {
   fi
 
   # get image sha256
-  image_sha256_raw="$(eval ""${BIN_DOCKER}" inspect "${1}" 2>/dev/null" | grep -i "id")"
+  image_sha256_raw="$(eval "${BIN_DOCKER}" inspect "${1}" 2>/dev/null | grep -i "id")"
   if test -z "${image_sha256_raw}"; then
     echo "Failed to get ID-SHA256 from ${1} image. Exiting..."
     exit 1
@@ -307,7 +311,7 @@ function filter_image_sha256() {
   fi
 
   # filter it
-  echo "$(echo "${1}" | sed 's/"//g;s/.$//g' | awk '{ print $2 }')"
+  echo "${1}" | sed 's/"//g;s/.$//g' | awk '{ print $2 }'
 }
 
 # Get all containers based on a specific image
@@ -335,7 +339,7 @@ function get_containers() {
     fi
 
     # check if this container have orgin from image target
-    container_sha256_raw="$(eval ""${BIN_DOCKER}" inspect "${container_id}" 2>/dev/null" | grep -iE '"image":[[:space:]]"sha256')"
+    container_sha256_raw="$(eval "${BIN_DOCKER}" inspect "${container_id}" 2>/dev/null | grep -iE '"image":[[:space:]]"sha256')"
     if test -z "${container_sha256_raw}"; then
       echo "Container SHA256 not found. Exiting..."
       exit 1
@@ -356,7 +360,7 @@ function get_containers() {
         to_response="$(printf "%s\n%s" "${to_response}" "${container_id}")"
       fi
     fi
-  done <<< "$(eval ""${BIN_DOCKER}" ps -a 2>/dev/null" | grep -iv 'container id')"
+  done <<< "$(eval "${BIN_DOCKER}" ps -a 2>/dev/null | grep -iv 'container id')"
 
   # return
   echo -e "${to_response}"
@@ -370,7 +374,7 @@ function delete_container() {
     exit 1
   fi
 
-  if test "$(eval ""${BIN_DOCKER}" stop "${1}" >/dev/null 2>&1 && "${BIN_DOCKER}" rm "${1}" >/dev/null 2>&1; echo "${?}"")" -eq 0; then
+  if test "$(eval "${BIN_DOCKER}" stop "${1}" >/dev/null 2>&1 && "${BIN_DOCKER}" rm "${1}" >/dev/null 2>&1; echo "${?}")" -eq 0; then
     echo "Container ${1} deleted."
   fi
 }
@@ -386,7 +390,7 @@ function delete_docker_image() {
   fi
 
   # execute and return
-  echo "$(eval "${BIN_DOCKER} rmi "${1}" 2>&1")"
+  eval "${BIN_DOCKER}" rmi "${1}" 2>&1
 }
 
 # @brief Build a new Docker Image
