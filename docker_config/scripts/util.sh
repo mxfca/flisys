@@ -40,7 +40,7 @@ declare BIN_SYSCTL
 
 # Set default values
 # ###########################################################################
-MIN_BASH_VERSION=3
+MIN_BASH_VERSION=4
 DOCKERF_VER_MAJOR=''
 DOCKERF_VER_MID=''
 DOCKERF_VER_MINOR=''
