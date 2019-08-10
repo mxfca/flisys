@@ -192,15 +192,21 @@ function check_image_exists() {
 }
 
 # Ask to user if an image can be deleted
-function ask_for_delete() {
+function ask_user() {
   local choice
   local attempts
+
+  # check if have something to process
+  if test "${#}" -eq 0; then
+    echo "Invalid parameters to mount a question to user. Exiting..."
+    exit 1
+  fi
 
   USER_CHOICE=''
   attempts=1
 
   while test "${attempts}" -lt 4; do
-    echo -n "An image with same version already exists. Do you want to delete it and its containers? [Y/n]: "
+    echo -n "${1} [Y/n]: "
     read -r choice
 
     case "${choice}" in

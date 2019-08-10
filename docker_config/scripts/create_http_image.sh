@@ -99,7 +99,7 @@ function main() {
   # Check if already have an image at same version
   if test ! -z "$(check_image_exists "${IMAGE_HTTP}")"; then
     # ask to delete it first (including its containers)
-    ask_for_delete
+    ask_user "An image with same version already exists. Do you want to delete it and its containers?"
 
     # Check if user aswered it
     if test -z "${USER_CHOICE}"; then
@@ -116,6 +116,8 @@ function main() {
   # ask for proxy
 
   # generate self signed certificate
+
+  # configure volumes
 
   usr_message "Create Image" "All set to FliSys HTTP Image."
 }
