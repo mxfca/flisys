@@ -116,4 +116,4 @@ RUN /usr/bin/openssl req -config /etc/ssl/gen.cert -x509 -nodes -days 90 -newkey
 EXPOSE 80
 EXPOSE 443
 
-ENTRYPOINT [ "/usr/local/sbin/dockerStart.sh" ]
+ENTRYPOINT [ "/usr/local/sbin/docker_start.sh" ]
