@@ -36,24 +36,77 @@ if test "${BASH_VERSION%%.*}" -gt '2'; then
 fi
 
 # Global Vars
-# ###########################################################################
+# ################
 declare SCRIPT_PATH
-declare ROOT_PATH
+declare FLISYS_ENVIRONMENT
 
 # Default Values
-# ###########################################################################
+# ################
 SCRIPT_PATH="$(cd "$(dirname "${0}")" && pwd -P)"
-ROOT_PATH="$(dirname "$(dirname "${SCRIPT_PATH}")")"
+FLISYS_ENVIRONMENT="production"
 
 # Add auxiliary script
-# ###########################################################################
+# ################
+# shellcheck source=/dev/null
 . "${SCRIPT_PATH}/util.sh"
 
-# Generate HTTP certificate
+# ########################################################################## #
+# Execution
+# ########################################################################## #
 
-# Set HTTP volumes map
+# Startup function
+# ################
+function main() {
+  local bin_bash
 
-# Set Database volumes map
+  check_bash_version
+  get_arguments "${@}"
 
-# Set Database User password
+  # get path
+  bin_bash="$(command -v bash)"
 
+  # check error
+  if test -z "${bin_bash}"; then
+    usr_message "Deploy" "Path to binary bash was not found. Exiting..."
+    exit 1
+  fi
+  
+  # prepare http data
+  eval "${bin_bash} ${SCRIPT_PATH}/prep_http_image.sh --environment=${FLISYS_ENVIRONMENT}"
+
+  # prepare database data
+
+  # generate images
+
+  # deploy containers
+}
+
+# ########################################################################## #
+# Helper functions
+# ########################################################################## #
+
+function get_arguments() {
+  # check if have something to process
+  if test "${#}" -eq 0; then
+    return
+  fi
+
+  # get arguments
+  while test "${#}" -gt 0; do
+    case "${1}" in
+      --environment=*) FLISYS_ENVIRONMENT="$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')"; shift 1;; # string
+      *) usr_message "Deploy" "Unknown option: ${1}"; exit 1;;
+    esac
+  done
+
+  # check for error
+  if test -z "${FLISYS_ENVIRONMENT}" -o -z "$(echo "${FLISYS_ENVIRONMENT}" | grep -E '(production|development)')"; then
+    usr_message "Deploy" 'Invalid argument: <environment>. Should be "production" or "development".'
+    exit 1
+  fi
+}
+
+# ########################################################################## #
+# Start the script
+# ########################################################################## #
+main "${@}"
