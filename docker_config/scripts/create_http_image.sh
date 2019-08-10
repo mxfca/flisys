@@ -61,9 +61,6 @@ CONTAINER_ENVIRONMENT="production"
 # ###########################################################################
 function main() {
   local image_main_version
-  local user_choice
-
-  user_choice=''
 
   check_bash_version
   get_arguments "${@}"
@@ -105,16 +102,20 @@ function main() {
     ask_for_delete
 
     # Check if user aswered it
-    if test -z "${user_choice}"; then
+    if test -z "${USER_CHOICE}"; then
       usr_message "Create Image" "You must choose a valid option, otherwise can not proceed. Exiting..."
       exit 1
-    elif test "${user_choice}" = "n"; then
+    elif test "${USER_CHOICE}" = "n"; then
       usr_message "Create Image" "You choosed not delete an image of FliSys HTTP Service that is at same version. In this case, it is impossible to proceed once it will be overwritten. Exiting..."
       exit 0
     fi
 
     delete_image "${IMAGE_HTTP}"
   fi
+
+  # ask for proxy
+
+  # generate self signed certificate
 
   usr_message "Create Image" "All set to FliSys HTTP Image."
 }
