@@ -67,30 +67,30 @@ function main() {
   set_environment
 
   if test -z "$(path_exists "${HTTP_PATH}")"; then
-    usr_message "Create Image" "Path to FliSys HTTP Service not found. Exiting..."
+    usr_message "Prep. Image" "Path to FliSys HTTP Service not found. Exiting..."
     exit 1
   fi
 
   if test -z "$(file_exists "${DOCKER_FILE}")"; then
-    usr_message "Create Image" "Dockerfile is missing in HTTP Service path. Exiting..."
+    usr_message "Prep. Image" "Dockerfile is missing in HTTP Service path. Exiting..."
     exit 1
   fi
 
   image_main_version="$(find_dockerfile_version "${DOCKER_FILE}")"
   if test -z "${image_main_version}"; then
-    usr_message "Create Image" "Invalid Dockerfile version of image. Exiting..."
+    usr_message "Prep. Image" "Invalid Dockerfile version of image. Exiting..."
     exit 1
   fi
 
   split_dockerfile_version "${image_main_version}"
 
   if test -z "${BIN_DOCKER}"; then
-    usr_message "Create Image" "Docker service is not installed or not in your environment variable. Exiting..."
+    usr_message "Prep. Image" "Docker service is not installed or not in your environment variable. Exiting..."
     exit 1
   fi
 
   if test -z "$(check_docker_service)"; then
-    usr_message "Create Image" "Docker service is not running. Please, start it before proceed."
+    usr_message "Prep. Image" "Docker service is not running. Please, start it before proceed."
     echo -e "\tTry this command as root: systemctl start docker"
     echo "Exiting..."
     exit 1
@@ -103,10 +103,10 @@ function main() {
 
     # Check if user aswered it
     if test -z "${USER_CHOICE}"; then
-      usr_message "Create Image" "You must choose a valid option, otherwise can not proceed. Exiting..."
+      usr_message "Prep. Image" "You must choose a valid option, otherwise can not proceed. Exiting..."
       exit 1
     elif test "${USER_CHOICE}" = "n"; then
-      usr_message "Create Image" "You choosed not delete an image of FliSys HTTP Service that is at same version. In this case, it is impossible to proceed once it will be overwritten. Exiting..."
+      usr_message "Prep. Image" "You choosed not delete an image of FliSys HTTP Service that is at same version. In this case, it is impossible to proceed once it will be overwritten. Exiting..."
       exit 0
     fi
 
@@ -119,7 +119,7 @@ function main() {
 
   # configure volumes
 
-  usr_message "Create Image" "All set to FliSys HTTP Image."
+  usr_message "Prep. Image" "All set to FliSys HTTP Image."
 }
 
 function set_environment() {
@@ -129,10 +129,10 @@ function set_environment() {
 
   if test ! -z "$(echo "${CONTAINER_ENVIRONMENT}" | grep -E 'production')"; then
     DOCKER_FILE="${file_path}/Dockerfile"
-    usr_message "Create Image" "Set environment as Production"
+    usr_message "Prep. Image" "Set environment as Production"
   else
     DOCKER_FILE="${file_path}/Dockerfile-dev"
-    usr_message "Create Image" "Set environment as Production"
+    usr_message "Prep. Image" "Set environment as Development"
   fi
 }
 
@@ -150,13 +150,13 @@ function get_arguments() {
   while test "${#}" -gt 0; do
     case "${1}" in
       --environment=*) CONTAINER_ENVIRONMENT="$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')"; shift 1;; # string
-      *) usr_message "Create Image" "Unknown option: ${1}"; exit 1;;
+      *) usr_message "Prep. Image" "Unknown option: ${1}"; exit 1;;
     esac
   done
 
   # check for error
   if test -z "${CONTAINER_ENVIRONMENT}" -o -z "$(echo "${CONTAINER_ENVIRONMENT}" | grep -E '(production|development)')"; then
-    usr_message "Create Image" 'Invalid argument: <environment>. Should be "production" or "development".'
+    usr_message "Prep. Image" 'Invalid argument: <environment>. Should be "production" or "development".'
     exit 1
   fi
 }
