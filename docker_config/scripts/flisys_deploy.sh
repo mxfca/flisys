@@ -59,10 +59,16 @@ FLISYS_ENVIRONMENT="production"
 function main() {
   local bin_bash
 
+  # check minimum bash version
   check_bash_version
+
+  # welcome
+  usr_message "Deploy" "Welcome to FliSys deploy!"
+
+  # get command line arguments (if available)
   get_arguments "${@}"
 
-  # get path
+  # get bash binary path
   bin_bash="$(command -v bash)"
 
   # check error
@@ -72,6 +78,7 @@ function main() {
   fi
   
   # prepare http data
+  usr_message "Deploy" "Starting preparation for FliSys HTTP Docker Image"
   eval "${bin_bash} ${SCRIPT_PATH}/prep_http_image.sh --environment=${FLISYS_ENVIRONMENT}"
 
   # prepare database data
