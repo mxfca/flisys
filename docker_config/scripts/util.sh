@@ -436,4 +436,4 @@ export -f find_dockerfile_version
 export -f split_dockerfile_version
 export -f check_docker_service
 export -f check_image_exists
-export -f ask_for_delete
+export -f ask_user
