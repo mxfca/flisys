@@ -214,6 +214,10 @@ function ask_user() {
         USER_CHOICE="$(echo "${choice}" | tr '[:upper:]' '[:lower:]')"
         break
         ;;
+      "")
+        USER_CHOICE="y"
+        break
+        ;;
       *)
         echo "Invalid choice, please inform a valid one! [${attempts}/3]"
         ;;
