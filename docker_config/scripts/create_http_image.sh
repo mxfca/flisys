@@ -36,7 +36,7 @@ if test "${BASH_VERSION%%.*}" -gt '2'; then
 fi
 
 # Global Vars
-# ###########################################################################
+# ################
 declare SCRIPT_PATH
 declare HTTP_PATH
 declare DOCKER_FILE
@@ -60,7 +60,6 @@ CONTAINER_ENVIRONMENT="production"
 # Startup function
 # ###########################################################################
 function main() {
-  local valid_path
   local image_main_version
   local user_choice
 
@@ -117,23 +116,7 @@ function main() {
     delete_image "${IMAGE_HTTP}"
   fi
 
-  echo "${image_main_version}"
-  echo "${DOCKERF_VER_MAJOR}"
-  echo "${DOCKERF_VER_MID}"
-  echo "${DOCKERF_VER_MINOR}"
-  exit 0
-  
-  # create a new image
-  docker_build_image "${IMAGE_HTTP}" "${image_main_version}"
-
-  # display docker images to evidence the creation of new image
-
-  echo "${image_main_version}"
-  echo "${DOCKERF_VER_MAJOR}"
-  echo "${DOCKERF_VER_MID}"
-  echo "${DOCKERF_VER_MINOR}"
-
-  echo "all good"
+  usr_message "Create Image" "All set to FliSys HTTP Image."
 }
 
 function set_environment() {
