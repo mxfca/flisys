@@ -37,6 +37,7 @@ declare IMAGE_HTTP
 declare IMAGE_DATABASE
 declare BIN_DOCKER
 declare BIN_SYSCTL
+declare USER_CHOICE
 
 # Set default values
 # ###########################################################################
@@ -44,6 +45,7 @@ MIN_BASH_VERSION=4
 DOCKERF_VER_MAJOR=''
 DOCKERF_VER_MID=''
 DOCKERF_VER_MINOR=''
+USER_CHOICE=''
 
 # Set default values for external
 export IMAGE_HTTP='flisys/http'
@@ -52,6 +54,7 @@ BIN_DOCKER="$(command -v docker)"
 export BIN_DOCKER
 BIN_SYSCTL="$(command -v systemctl)"
 export BIN_SYSCTL
+export USER_CHOICE
 
 # Check Bash version
 function check_bash_version() {
@@ -193,15 +196,16 @@ function ask_for_delete() {
   local choice
   local attempts
 
+  USER_CHOICE=''
   attempts=1
 
   while test "${attempts}" -lt 4; do
     echo -n "An image with same version already exists. Do you want to delete it and its containers? [Y/n]: "
-    read choice
+    read -r choice
 
     case "${choice}" in
       "Y"|"y"|"N"|"n")
-        user_choice="$(echo "${choice}" | tr '[A-Z]' '[a-z]')"
+        USER_CHOICE="$(echo "${choice}" | tr '[:upper:]' '[:lower:]')"
         break
         ;;
       *)
