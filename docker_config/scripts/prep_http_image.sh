@@ -114,6 +114,17 @@ function main() {
   fi
 
   # ask for proxy
+  ask_user "Do you need to configure proxy for FliSys containers?"
+
+  # Check user answer
+  if test -z "${USER_CHOICE}"; then
+    usr_message "Prep. Image" "You must choose a valid option, otherwise can not proceed. Exiting..."
+    exit 1
+  elif test "${USER_CHOICE}" = "y"; then
+    prep_proxy
+  else
+    usr_message "Prep. Image" "User informed that proxy is not required to be set to run FliSys HTTP Container."
+  fi
 
   # generate self signed certificate
 
@@ -133,6 +144,58 @@ function set_environment() {
   else
     DOCKER_FILE="${file_path}/Dockerfile-dev"
     usr_message "Prep. Image" "Set environment as Development"
+  fi
+}
+
+function prep_proxy() {
+  local proxy_uri
+  local bin_sed
+  local output
+
+  # get binary path
+  bin_sed="$(command -v sed)"
+
+  # check error
+  if test -z "${bin_sed}"; then
+    usr_message "Prep. Image" "SED is not installed or not able to use. Aborting proxy step..."
+    return
+  fi
+
+  # ask user
+  echo -n "Please, inform your proxy URI (e.g. http://hostname:8080): "
+  read -r proxy_uri
+
+  # check answer
+  if test -z "${proxy_uri}"; then
+    usr_message "Prep. Image" "No proxy URI informed. Aborting proxy step..."
+    return
+  elif test ! -z "$(echo "${proxy_uri}" | tr '[:upper:]' '[:lower:]' | grep -E '^https://')"; then
+    usr_message "Prep. Image" "HTTPS is reserved for internal tasks. Aborting proxy step..."
+    return
+  elif test ! -z "$(echo "${proxy_uri}" | tr '[:upper:]' '[:lower:]' | grep -E '^http://')" -a ! -z "$(check_proxy_uri "${proxy_uri}")"; then
+    usr_message "Prep. Image" "Proxy URI is ${proxy_uri}"
+  else
+    usr_message "Prep. Image" "Another protocol beyond HTTP should be set manually in Dockerfile. Aborting proxy step..."
+    return
+  fi
+
+  # apply proxy
+  output="$(eval "${bin_sed} -i \"/HTTP_PROXY/c\ENV HTTP_PROXY \\\"${proxy_uri}\\\"\" ${DOCKER_FILE} 2>&1")"
+
+  # check error
+  if test ! -z "${output}"; then
+    usr_message "Prep. Image" "Failed to apply proxy data with error:\n\t${output}"
+  fi
+}
+
+function check_proxy_uri() {
+  # check if have something to process
+  if test "${#}" -eq 0; then
+    return
+  fi
+
+  if test ! -z "$(echo "${1}" | tr '[:upper:]' '[:lower:]' | grep -E '^(http://)?[a-zA-Z0-9_\.-]+(:[0-9]+)?$')"; then
+    echo "ok"
   fi
 }
 
