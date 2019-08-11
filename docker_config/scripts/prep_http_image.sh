@@ -114,6 +114,8 @@ function main() {
   fi
 
   # ask for proxy
+  echo ""
+  usr_message "Proxy Configuration" ""
   ask_user "Do you need to configure proxy for FliSys containers?"
 
   # Check user answer
@@ -127,11 +129,18 @@ function main() {
   fi
 
   # generate self signed certificate
+  echo ""
+  usr_message "Auto Signed Web Certificate" ""
   usr_message "Prep. HTTP" "Even if you already have your own web certificate, it is necessary to create one only during docker image generation."
   prep_web_cert
 
   # configure volumes
+  echo ""
+  usr_message "Shared Directory" ""
+  prep_shared_dir
 
+  # all done
+  echo ""
   usr_message "Prep. HTTP" "All set to FliSys HTTP Image."
 }
 
@@ -281,19 +290,28 @@ function chk_cert() {
 
   case "${1}" in
     "Country")
-      output="$(echo "${2}" | grep -E '^[a-zA-Z]{2}$')"
+      output="$(echo "${2}" | grep -E '^[a-zA-Z]{2}$'|| true)"
       ;;
     "State")
-      output="$(echo "${2}" | grep -E '^[a-zA-Z]{2}$')"
+      output="$(echo "${2}" | grep -E '^[a-zA-Z]{2}$'|| true)"
       ;;
     "City")
-      output="$(echo "${2}" | grep -E '^[a-zA-Z0-9]+$')"
+      output="$(echo "${2}" | grep -E '^[a-zA-Z0-9]+$'|| true)"
       ;;
     "Company")
-      output="$(echo "${2}" | grep -E '^[a-zA-Z0-9]+$')"
+      output="$(echo "${2}" | grep -E '^[a-zA-Z0-9]+$'|| true)"
       ;;
     "Domain")
-      output="$(echo "${2}" | grep -E '^[a-zA-Z0-9/_\.-]+$')"
+      output="$(echo "${2}" | grep -E '^[a-zA-Z0-9/_\.-]+$'|| true)"
+      ;;
+    "SystemLogs")
+      output="$(echo "${2}" | grep -E '^[a-zA-Z0-9/_\.-]+$'|| true)"
+      ;;
+    "ExternalConfiguration")
+      output="$(echo "${2}" | grep -E '^[a-zA-Z0-9/_\.-]+$' || true)"
+      ;;
+    "WebCertificate")
+      output="$(echo "${2}" | grep -E '^[a-zA-Z0-9/_\.-]+$' || true)"
       ;;
   esac
 
@@ -332,6 +350,88 @@ function apply_cert_data() {
   # check error
   if test ! -z "${output}"; then
     usr_message "Prep. HTTP" "Failed to apply data with error:\n\t${output}"
+    exit 1
+  fi
+}
+
+function prep_shared_dir() {
+  local d_log
+  local d_extconf
+  local d_certificate
+
+  # welcome
+  usr_message "Welcome to Shared Directory Wizard" ""
+  usr_message "Shared Dir." "In order to avoid data losing, it is necessary to set some paths to safe save the data. These paths must already exists."
+  echo ""
+
+  # ask user
+  echo -n "Path to System Logs: "
+  read -r d_log
+
+  # check error
+  chk_cert "SystemLogs" "${d_log}"
+  if test -z "$(path_exists "${d_log}")"; then
+    usr_message "Shared Dir." "System Log directory does not exists. Exiting..."
+    exit 1
+  fi
+
+  # ask user
+  echo -n "Path to External Configuration: "
+  read -r d_extconf
+
+  # check error
+  chk_cert "ExternalConfiguration" "${d_extconf}"
+  if test -z "$(path_exists "${d_extconf}")"; then
+    usr_message "Shared Dir." "External Configuration directory does not exists. Exiting..."
+    exit 1
+  fi
+
+  # ask user
+  echo -n "Path to Web Certificate: "
+  read -r d_certificate
+
+  # check error
+  chk_cert "WebCertificate" "${d_certificate}"
+  if test -z "$(path_exists "${d_certificate}")"; then
+    usr_message "Shared Dir." "Web Certificate directory does not exists. Exiting..."
+    exit 1
+  fi
+
+  # apply data
+  apply_vol_data "${d_log}:/var/log:z" "WEBLOG"
+  apply_vol_data "${d_extconf}:/var/www/flisys/inclue/external:z" "WEBEXTCONF"
+  apply_vol_data "${d_certificate}:/etc/apache2/certs:z" "WEBCERT"
+}
+
+function apply_vol_data() {
+  local bin_sed
+  local file_path
+  local output
+
+  # check if have something to process
+  if test "${#}" -ne 2; then
+    usr_message "Prep. Shared Dir." "Invalid value while saving shared directory path. Exiting..."
+    exit 1
+  fi
+
+  # get binary path
+  bin_sed="$(command -v sed)"
+
+  # check error
+  if test -z "${bin_sed}"; then
+    usr_message "Prep. Shared Dir." "SED is not installed or not able to use. Aborting..."
+    return
+  fi
+
+  # set path
+  file_path="$(dirname "${DOCKER_FILE}")/docker-compose.yml"
+
+  # execute change
+  output="$(eval "${bin_sed} -i \"/${2}/c\      - \\\"${1}\\\"\" ${file_path} 2>&1")"
+
+  # check error
+  if test ! -z "${output}"; then
+    usr_message "Prep. Shared Dir." "Failed to apply data with error:\n\t${output}"
     exit 1
   fi
 }
