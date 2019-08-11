@@ -127,6 +127,8 @@ function main() {
   fi
 
   # generate self signed certificate
+  usr_message "Prep. Image" "Even if you already have your own web certificate, it is necessary to create one only during docker image generation."
+  prep_web_cert
 
   # configure volumes
 
@@ -196,6 +198,68 @@ function check_proxy_uri() {
 
   if test ! -z "$(echo "${1}" | tr '[:upper:]' '[:lower:]' | grep -E '^(http://)?[a-zA-Z0-9_\.-]+(:[0-9]+)?$')"; then
     echo "ok"
+  fi
+}
+
+function prep_web_cert() {
+  local c_country
+  local c_state
+  local c_location
+  local c_organization
+  local c_commonname
+
+  # ask user
+  echo -n "Inform your Country (only 02 characters): "
+  read -r c_country
+
+  # check error
+  chk_cert "Country" "${c_country}" "'^[a-zA-Z]{2}$'"
+
+  # ask user
+  echo -n "Inform your State (only 02 characters): "
+  read -r c_state
+
+  # check error
+  chk_cert "Country" "${c_state}" "'^[a-zA-Z]{2}$'"
+
+  # ask user
+  echo -n "Inform your City (only alphanumeric without spaces): "
+  read -r c_location
+
+  # check error
+  chk_cert "Country" "${c_location}" "'^[a-zA-Z0-9]+$'"
+
+  # ask user
+  echo -n "Inform your Company (only alphanumeric without spaces): "
+  read -r c_organization
+
+  # check error
+  chk_cert "Country" "${c_organization}" "'^[a-zA-Z0-9]+$'"
+
+  # ask user
+  echo -n "Inform your Domain: "
+  read -r c_commonname
+
+  # check error
+  chk_cert "Country" "${c_commonname}" "'^[a-zA-Z0-9/_\.-]+$'"
+
+  # apply content
+  
+}
+
+function chk_cert() {
+  # check if have something to process
+  if test "${#}" -ne 2; then
+    usr_message "Prep. Image" "Invalid value during web certificate checking. Exiting..."
+    exit 1
+  fi
+
+  if test -z "${2}"; then
+    usr_message "Prep. Image" "Invalid value of ${1}. Exiting..."
+    exit 1
+  elif test -z "$(echo "${2}" | grep -E "${3}")"; then
+    usr_message "Prep. Image" "Invalid value format of ${1}. Exiting..."
+    exit 1
   fi
 }
 
