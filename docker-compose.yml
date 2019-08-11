@@ -43,6 +43,10 @@ services:
     networks:
       - net_flisys
       - default
+    volumes:
+      - "WEBCERT"
+      - "WEBEXTCONF"
+      - "WEBLOG"
     depends_on:
       - flisys_db
 
