@@ -82,6 +82,8 @@ function main() {
   eval "${bin_bash} ${SCRIPT_PATH}/prep_http_image.sh --environment=${FLISYS_ENVIRONMENT}"
 
   # prepare database data
+  usr_message "Deploy" "Starting preparation for FliSys Database Docker Image"
+  eval "${bin_bash} ${SCRIPT_PATH}/prep_db_image.sh --environment=${FLISYS_ENVIRONMENT}"
 
   # generate images
 
@@ -117,3 +119,4 @@ function get_arguments() {
 # Start the script
 # ########################################################################## #
 main "${@}"
+# ./flisys_deploy.sh --environment=production
