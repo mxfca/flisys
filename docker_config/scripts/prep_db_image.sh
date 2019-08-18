@@ -47,6 +47,9 @@ declare CA_RSA_CERT
 declare SERVER_KEY
 declare SERVER_KEY_REQ
 declare SERVER_CERT
+declare CLIENT_KEY
+declare CLIENT_REQ
+declare CLIENT_CERT
 
 # Default Values
 # ################
@@ -59,6 +62,9 @@ CA_RSA_CERT="${DATABASE_PATH}/cert/mysql-ca-cert.pem"
 SERVER_KEY="${DATABASE_PATH}/cert/mysql-server-key.pem"
 SERVER_KEY_REQ="${DATABASE_PATH}/cert/mysql-server-req.pem"
 SERVER_CERT="${DATABASE_PATH}/cert/mysql-server-cert.pem"
+CLIENT_KEY="${DATABASE_PATH}/cert/mysql-client-key.pem"
+CLIENT_REQ="${DATABASE_PATH}/cert/mysql-client-req.pem"
+CLIENT_CERT="${DATABASE_PATH}/cert/mysql-client-cert.pem"
 
 # Add auxiliary script
 # ################
@@ -132,8 +138,7 @@ function main() {
   create_server_ssl
 
   # create client certificate
-
-  # copy public client certificate to HTTP Service
+  create_client_ssl
 
   # all done
   echo ""
@@ -289,12 +294,45 @@ function apply_cert_data() {
   fi
 }
 
+function create_client_ssl() {
+  gen_client_key
+  convert_clientkey_rsa
+  gen_client_cert
+}
+
 function create_server_ssl() {
   gen_ca_key
   gen_ca_certificate
   gen_server_key
   convert_serverkey_rsa
   gen_server_certificate
+}
+
+function gen_client_cert() {
+  openssl x509 -req -in "${CLIENT_REQ}" -days 365 -CA "${CA_RSA_CERT}" -CAkey "${CA_RSA_KEY}" -set_serial 01 -out "${CLIENT_CERT}"
+
+  if test "${?}" != 0; then
+    usr_message "Prep. DB" "Failed to create new Client Certificate. Exiting..."
+    exit 1
+  fi
+}
+
+function convert_clientkey_rsa() {
+  openssl rsa -in "${CLIENT_KEY}" -out "${CLIENT_KEY}"
+
+  if test "${?}" != 0; then
+    usr_message "Prep. DB" "Failed to convert Client Private Key to RSA type. Exiting..."
+    exit 1
+  fi
+}
+
+function gen_client_key() {
+  openssl req -config "${GEN_CERT}" -newkey rsa:2048 -days 365 -nodes -keyout "${CLIENT_KEY}" -out "${CLIENT_REQ}"
+
+  if test "${?}" != 0; then
+    usr_message "Prep. DB" "Failed to generate Client Private Key. Exiting..."
+    exit 1
+  fi
 }
 
 function gen_server_certificate() {
