@@ -41,12 +41,24 @@ declare SCRIPT_PATH
 declare DATABASE_PATH
 declare DOCKER_FILE
 declare CONTAINER_ENVIRONMENT
+declare GEN_CERT
+declare CA_RSA_KEY
+declare CA_RSA_CERT
+declare SERVER_KEY
+declare SERVER_KEY_REQ
+declare SERVER_CERT
 
 # Default Values
 # ################
 SCRIPT_PATH="$(cd "$(dirname "${0}")" && pwd -P)"
 DATABASE_PATH="$(dirname "${SCRIPT_PATH}")/database"
 CONTAINER_ENVIRONMENT="production"
+GEN_CERT="${DATABASE_PATH}/cert/gen.cert"
+CA_RSA_KEY="${DATABASE_PATH}/cert/mysql-ca-key.pem"
+CA_RSA_CERT="${DATABASE_PATH}/cert/mysql-ca-cert.pem"
+SERVER_KEY="${DATABASE_PATH}/cert/mysql-server-key.pem"
+SERVER_KEY_REQ="${DATABASE_PATH}/cert/mysql-server-req.pem"
+SERVER_CERT="${DATABASE_PATH}/cert/mysql-server-cert.pem"
 
 # Add auxiliary script
 # ################
@@ -113,7 +125,11 @@ function main() {
     delete_image "${IMAGE_DATABASE}"
   fi
 
+  # ask user for certificate params
+  prep_certificate
+
   # create SSL for the server
+  create_server_ssl
 
   # create client certificate
 
@@ -135,6 +151,194 @@ function set_environment() {
   else
     DOCKER_FILE="${file_path}/Dockerfile-dev"
     usr_message "Prep. DB" "Set environment as Development"
+  fi
+}
+
+function prep_certificate() {
+  local str_tmp
+  local c_country
+  local c_state
+  local c_location
+  local c_organization
+  local c_commonname
+
+  # ask user
+  echo -n "Inform your Country (only 02 characters): "
+  read -r c_country
+
+  # check error
+  chk_cert "Country" "${c_country}"
+
+  # ask user
+  echo -n "Inform your State (only 02 characters): "
+  read -r c_state
+
+  # check error
+  chk_cert "State" "${c_state}"
+
+  # ask user
+  echo -n "Inform your City (only alphanumeric without spaces): "
+  read -r c_location
+
+  # check error
+  chk_cert "City" "${c_location}"
+
+  # ask user
+  echo -n "Inform your Company (only alphanumeric without spaces): "
+  read -r c_organization
+
+  # check error
+  chk_cert "Company" "${c_organization}"
+
+  # ask user
+  echo -n "Inform your Domain: "
+  read -r c_commonname
+
+  # check error
+  chk_cert "Domain" "${c_commonname}"
+
+  # apply Country
+  str_tmp="$(echo "${c_country}" | tr '[:lower:]' '[:upper:]')"
+  apply_cert_data "${str_tmp}" "C="
+  
+  # apply State
+  str_tmp="$(echo "${c_state}" | tr '[:lower:]' '[:upper:]')"
+  apply_cert_data "${str_tmp}" "ST="
+
+  # apply Location
+  str_tmp="$(echo "${c_location}" | tr '[:lower:]' '[:upper:]')"
+  apply_cert_data "${str_tmp}" "L="
+
+  # apply Organization
+  str_tmp="$(echo "${c_organization}" | tr '[:lower:]' '[:upper:]')"
+  apply_cert_data "${str_tmp}" "O="
+
+  # apply Domain
+  str_tmp="$(echo "${c_commonname}" | tr '[:upper:]' '[:lower:]')"
+  apply_cert_data "${str_tmp}" "CN="
+}
+
+function chk_cert() {
+  local output
+
+  # check if have something to process
+  if test "${#}" -ne 2; then
+    usr_message "Prep. DB" "Invalid value during server certificate checking. Exiting..."
+    exit 1
+  fi
+
+  if test -z "${2}"; then
+    usr_message "Prep. DB" "Invalid value of ${1}. Exiting..."
+    exit 1
+  fi
+
+  case "${1}" in
+    "Country")
+      output="$(echo "${2}" | grep -E '^[a-zA-Z]{2}$'|| true)"
+      ;;
+    "State")
+      output="$(echo "${2}" | grep -E '^[a-zA-Z]{2}$'|| true)"
+      ;;
+    "City")
+      output="$(echo "${2}" | grep -E '^[a-zA-Z0-9]+$'|| true)"
+      ;;
+    "Company")
+      output="$(echo "${2}" | grep -E '^[a-zA-Z0-9]+$'|| true)"
+      ;;
+    "Domain")
+      output="$(echo "${2}" | grep -E '^[a-zA-Z0-9/_\.-]+$'|| true)"
+      ;;
+  esac
+
+  if test -z "${output}"; then
+    usr_message "Prep. DB" "Invalid value format of ${1}. Exiting..."
+    exit 1
+  fi
+}
+
+function apply_cert_data() {
+  local bin_sed
+  local file_path
+  local output
+
+  # check if have something to process
+  if test "${#}" -ne 2; then
+    usr_message "Prep. DB" "Invalid value while saving server certificate data. Exiting..."
+    exit 1
+  fi
+
+  # get binary path
+  bin_sed="$(command -v sed)"
+
+  # check error
+  if test -z "${bin_sed}"; then
+    usr_message "Prep. DB" "SED is not installed or not able to use. Aborting..."
+    return
+  fi
+
+  # set path
+  file_path="${GEN_CERT}"
+
+  # execute change
+  output="$(eval "${bin_sed} -i \"/${2}/c\${2}\\\"${1}\\\"\" ${file_path} 2>&1")"
+
+  # check error
+  if test ! -z "${output}"; then
+    usr_message "Prep. DB" "Failed to apply data with error:\n\t${output}"
+    exit 1
+  fi
+}
+
+function create_server_ssl() {
+  gen_ca_key
+  gen_ca_certificate
+  gen_server_key
+  convert_serverkey_rsa
+  gen_server_certificate
+}
+
+function gen_server_certificate() {
+  openssl x509 -req -in "${SERVER_KEY_REQ}" -days 365 -CA "${CA_RSA_CERT}" -CAkey "${CA_RSA_KEY}" -set_serial 01 -out "${SERVER_CERT}"
+
+  if test "${?}" != 0; then
+    usr_message "Prep. DB" "Failed to create new Server Certificate. Exiting..."
+    exit 1
+  fi
+}
+
+function convert_serverkey_rsa() {
+  openssl rsa -in "${SERVER_KEY}" -out "${SERVER_KEY}"
+
+  if test "${?}" != 0; then
+    usr_message "Prep. DB" "Failed to convert Server Private Key to RSA type. Exiting..."
+    exit 1
+  fi
+}
+
+function gen_server_key() {
+  openssl req -config "${GEN_CERT}" -newkey rsa:2048 -days 365 -nodes -keyout "${SERVER_KEY}" -out "${SERVER_KEY_REQ}"
+  
+  if test "${?}" != 0; then
+    usr_message "Prep. DB" "Failed to generate Server Private Certificate - Private Key. Exiting..."
+    exit 1
+  fi
+}
+
+function gen_ca_certificate() {
+  openssl req -config "${GEN_CERT}" -new -x509 -nodes -days 400 -key "${CA_RSA_KEY}" -out "${CA_RSA_CERT}"
+  
+  if test "${?}" != 0; then
+    usr_message "Prep. DB" "Failed to generate CA Certificate. Exiting..."
+    exit 1
+  fi
+}
+
+function gen_ca_key() {
+  openssl genrsa 2048 > "${CA_RSA_KEY}"
+
+  if test "${?}" != 0; then
+    usr_message "Prep. DB" "Failed to generate CA Private Key. Exiting..."
+    exit 1
   fi
 }
 
