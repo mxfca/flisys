@@ -73,6 +73,7 @@ RUN usermod -u 2001 www-data \
   && mkdir -p /var/log/flisys \
   && mkdir -p /etc/apache2/certs \
   && mkdir -p /var/www/flisys \
+  && mkdir -p /etc/ssl/mysql \
   && touch /var/www/.rnd \
   && chown -R 0:2001 /var/log/apache2/flisys \
   && chown -R 0:2001 /var/log/flisys \
@@ -96,6 +97,9 @@ COPY docker_config/http/ports.conf /etc/apache2/
 COPY docker_config/http/security.conf /etc/apache2/conf-available/
 COPY docker_config/http/000-default.conf /etc/apache2/sites-available/
 COPY docker_config/http/gen.cert /etc/ssl/
+COPY docker_config/database/cert/mysql-client-key.pem /etc/ssl/mysql/
+COPY docker_config/database/cert/mysql-client-cert.pem /etc/ssl/mysql/
+COPY docker_config/database/cert/mysql-ca-cert.pem /etc/ssl/mysql/
 COPY docker_config/logrotate/apache.conf /etc/logrotate.d/
 COPY docker_config/logrotate/flisys.conf /etc/logrotate.d/
 COPY src/ /var/www/flisys/
