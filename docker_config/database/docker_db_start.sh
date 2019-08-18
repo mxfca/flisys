@@ -32,15 +32,29 @@
 set -e
 trap "echo got traped signal, exiting..." HUP INT QUIT TERM
 
-# Start Apache Service
+# Start Database Service
 # ----------------------------------------------------------------------------
 /usr/sbin/service mysql start
+
+# Delete Anonymous Users
+# DELETE  FROM mysql.user WHERE User=''
+
+# Delete Remote Root
+# DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1')
+
+# Drop Test Database (if exists) and remove its privileges
+# DROP DATABASE IF EXISTS test
+# DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%'
+
+# Flush Privileges
+# FLUSH PRIVILEGES
+
 
 # wait until receive stop signal
 # ----------------------------------------------------------------------------
 echo "[hit enter key to exit] or run 'docker stop <container>'"
-read
+read -r
 
-# Stop Apache Service
+# Stop Database Service
 # ----------------------------------------------------------------------------
 /usr/sbin/service mysql stop
