@@ -94,15 +94,15 @@ innodb_buffer_pool_size=2147483648
 #
 # For generating SSL certificates you can use for example the GUI tool "tinyca".
 #
-#ssl-ca=/etc/mysql/cacert.pem
-#ssl-cert=/etc/mysql/server-cert.pem
-#ssl-key=/etc/mysql/server-key.pem
+ssl-ca=/etc/ssl/mysql-ca-cert.pem
+ssl-cert=/etc/ssl/mysql-server-cert.pem
+ssl-key=/etc/ssl/mysql-server-key.pem
 #
 # Accept only connections using the latest and most secure TLS protocol version.
 # ..when MariaDB is compiled with OpenSSL:
 # ssl-cipher=TLSv1.2
 # ..when MariaDB is compiled with YaSSL (default in Debian):
-# ssl=on
+ssl=on
 
 #
 # * Character sets
