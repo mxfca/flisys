@@ -25,12 +25,12 @@
 # You should have received a copy of the GNU General Public License
 # along with FliSys. If not, see <https://www.gnu.org/licenses/>.
 # ########################################################################### #
-# This Dockerfile is intend to be used in a production/QA/Test environment.
-# For development purposes, use Dockerfile-db-dev.
+# This Dockerfile is intend to be used as development environment.
+# For production/test/QA purposes, use Dockerfile-db instead.
 # ########################################################################### #
 FROM debian:latest
 
-LABEL flisys_version="4.0.0" environment="production"
+LABEL flisys_version="4.0.0" environment="development"
 
 # install system and required tolls
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -38,9 +38,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   mariadb-common \
   mariadb-client \
   openssl \
+  openssh-client \
   logrotate \
   locales \
   logrotate \
+  vim \
+  procps \
+  net-tools \  
   && rm -rf /var/lib/apt/lists/* \
   && /usr/bin/localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
   && rm -rf /etc/mysql/mariadb.conf.d/50-server.cnf \
