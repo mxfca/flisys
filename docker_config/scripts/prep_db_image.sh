@@ -131,6 +131,22 @@ function main() {
     delete_image "${IMAGE_DATABASE}"
   fi
 
+  # check for old certificates
+  if test ! -z "$(check_old_certs)"; then
+    ask_user "An old database certificate was found. Do you want to delete it to proceed?"
+
+    # Check if user aswered it
+    if test -z "${USER_CHOICE}"; then
+      usr_message "Prep. DB" "You must choose a valid option, otherwise can not proceed. Exiting..."
+      exit 1
+    elif test "${USER_CHOICE}" = "n"; then
+      usr_message "Prep. DB" "You choosed not delete an old database certificate. In this case, it is impossible to proceed once it will be overwritten. Exiting..."
+      exit 0
+    fi
+
+    del_old_certificate
+  fi
+
   # ask user for certificate params
   prep_certificate
 
@@ -156,6 +172,27 @@ function set_environment() {
   else
     DOCKER_FILE="${file_path}/Dockerfile-dev"
     usr_message "Prep. DB" "Set environment as Development"
+  fi
+}
+
+function del_old_certificate() {
+  rm -f "${DATABASE_PATH}/cert/*.pem"
+}
+
+function check_old_certs() {
+  local file_count
+  local file
+
+  file_count=0
+
+  for file in ${DATABASE_PATH}/cert; do
+    if test "${file}" != "gen.cert"; then
+      file_count=$(( file_count + 1 ))
+    fi
+  done
+
+  if test "${file_count}" -gt 0; then
+    echo "${file_count}"
   fi
 }
 
