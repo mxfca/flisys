@@ -41,12 +41,14 @@ declare SCRIPT_PATH
 declare HTTP_PATH
 declare DOCKER_FILE
 declare CONTAINER_ENVIRONMENT
+declare ANOTHER_OS
 
 # Default Values
 # ################
 SCRIPT_PATH="$(cd "$(dirname "${0}")" && pwd -P)"
 HTTP_PATH="$(dirname "${SCRIPT_PATH}")/http"
 CONTAINER_ENVIRONMENT="production"
+ANOTHER_OS=""
 
 # Add auxiliary script
 # ################
@@ -62,8 +64,17 @@ CONTAINER_ENVIRONMENT="production"
 function main() {
   local image_main_version
 
-  check_bash_version
   get_arguments "${@}"
+
+  if test ! -z "$(is_linux)" -a -z "${ANOTHER_OS}"; then
+    is_linux
+    exit 1
+  fi
+
+  if test -z "${ANOTHER_OS}"; then
+    check_bash_version
+  fi
+  
   set_environment
 
   if test -z "$(path_exists "${HTTP_PATH}")"; then
@@ -450,6 +461,7 @@ function get_arguments() {
   while test "${#}" -gt 0; do
     case "${1}" in
       --environment=*) CONTAINER_ENVIRONMENT="$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')"; shift 1;; # string
+      --osystem=*) ANOTHER_OS="$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')"; shift 1;; # string
       *) usr_message "Prep. HTTP" "Unknown option: ${1}"; exit 1;;
     esac
   done
