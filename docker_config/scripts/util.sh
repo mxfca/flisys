@@ -52,9 +52,17 @@ export IMAGE_HTTP='flisys/http'
 export IMAGE_DATABASE='flisys/database'
 BIN_DOCKER="$(command -v docker)"
 export BIN_DOCKER
-BIN_SYSCTL="$(command -v systemctl)"
 export BIN_SYSCTL
 export USER_CHOICE
+
+function is_linux() {
+  if test "$(uname)" != 'Linux'; then
+    echo "This deploy process is intend to run on Linux. You can try it at your own risk. Exiting..."
+    echo "Use parameter --osystem=<OS_NAME> to avoid this message."
+  else
+    BIN_SYSCTL="$(command -v systemctl)"
+  fi
+}
 
 # Check Bash version
 function check_bash_version() {

@@ -39,11 +39,13 @@ fi
 # ################
 declare SCRIPT_PATH
 declare FLISYS_ENVIRONMENT
+declare ANOTHER_OS
 
 # Default Values
 # ################
 SCRIPT_PATH="$(cd "$(dirname "${0}")" && pwd -P)"
 FLISYS_ENVIRONMENT="production"
+ANOTHER_OS=""
 
 # Add auxiliary script
 # ################
@@ -58,15 +60,23 @@ FLISYS_ENVIRONMENT="production"
 # ################
 function main() {
   local bin_bash
-
-  # check minimum bash version
-  check_bash_version
+  local caller_script
 
   # welcome
   usr_message "Deploy" "Welcome to FliSys deploy!"
 
   # get command line arguments (if available)
   get_arguments "${@}"
+
+  if test ! -z "$(is_linux)" -a -z "${ANOTHER_OS}"; then
+    is_linux
+    exit 1
+  fi
+
+  # check minimum bash version for linux
+  if test -z "${ANOTHER_OS}"; then
+    check_bash_version
+  fi
 
   # get bash binary path
   bin_bash="$(command -v bash)"
@@ -79,11 +89,19 @@ function main() {
   
   # prepare http data
   usr_message "Deploy" "Starting preparation for FliSys HTTP Docker Image"
-  eval "${bin_bash} ${SCRIPT_PATH}/prep_http_image.sh --environment=${FLISYS_ENVIRONMENT}"
+  caller_script="${bin_bash} ${SCRIPT_PATH}/prep_http_image.sh --environment=${FLISYS_ENVIRONMENT}"
+  if test ! -z "${ANOTHER_OS}"; then
+    caller_script="${caller_script} --osystem=${ANOTHER_OS}"
+  fi
+  eval "${caller_script}"
 
   # prepare database data
   usr_message "Deploy" "Starting preparation for FliSys Database Docker Image"
-  eval "${bin_bash} ${SCRIPT_PATH}/prep_db_image.sh --environment=${FLISYS_ENVIRONMENT}"
+  caller_script="${bin_bash} ${SCRIPT_PATH}/prep_db_image.sh --environment=${FLISYS_ENVIRONMENT}"
+  if test ! -z "${ANOTHER_OS}"; then
+    caller_script="${caller_script} --osystem=${ANOTHER_OS}"
+  fi
+  eval "${caller_script}"
 
   # generate images
 
@@ -104,6 +122,7 @@ function get_arguments() {
   while test "${#}" -gt 0; do
     case "${1}" in
       --environment=*) FLISYS_ENVIRONMENT="$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')"; shift 1;; # string
+      --osystem=*) ANOTHER_OS="$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')"; shift 1;; # string
       *) usr_message "Deploy" "Unknown option: ${1}"; exit 1;;
     esac
   done
