@@ -531,10 +531,12 @@ function docker_build_image() {
 # Export Global Functions
 # ###########################################################################
 export -f get_os
-export -f is_linux
 export -f set_systemd
+export -f get_file_value
+export -f is_linux
 export -f check_bash_version
 export -f usr_message
+export -f get_bash
 export -f filter_path
 export -f path_exists
 export -f file_exists

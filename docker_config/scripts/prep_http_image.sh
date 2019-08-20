@@ -41,14 +41,12 @@ declare SCRIPT_PATH
 declare HTTP_PATH
 declare DOCKER_FILE
 declare CONTAINER_ENVIRONMENT
-declare PARAM_FROM_DEPLOY
 
 # Default Values
 # ################
 SCRIPT_PATH="$(cd "$(dirname "${0}")" && pwd -P)"
 HTTP_PATH="$(dirname "${SCRIPT_PATH}")/http"
 CONTAINER_ENVIRONMENT="production"
-PARAM_FROM_DEPLOY="no"
 
 # Add auxiliary script
 # ################
@@ -452,14 +450,14 @@ function apply_vol_data() {
 function get_arguments() {
   # check if have something to process
   if test "${#}" -eq 0; then
-    return
+    usr_message "Prep. HTTP" "Missing argument <environment>" "yes" "yes"
+    exit 1
   fi
 
   # get arguments
   while test "${#}" -gt 0; do
     case "${1}" in
       --environment=*) CONTAINER_ENVIRONMENT="$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')"; shift 1;; # string
-      --from=*) PARAM_FROM_DEPLOY="$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')"; shift 1;; # string
       *) usr_message "Prep. HTTP" "Unknown option: ${1}" "yes" "yes"; exit 1;;
     esac
   done
@@ -467,11 +465,6 @@ function get_arguments() {
   # check for error
   if test -z "${CONTAINER_ENVIRONMENT}" -o -z "$(echo "${CONTAINER_ENVIRONMENT}" | grep -E '(production|development)')"; then
     usr_message "Prep. HTTP" 'Invalid argument: <environment>. Should be "production" or "development".' "yes" "yes"
-    exit 1
-  fi
-
-  if test -z "${PARAM_FROM_DEPLOY}" -o -z "$(echo "${PARAM_FROM_DEPLOY}" | grep -E '(yes|no)')"; then
-    usr_message "Prep. HTTP" 'Invalid argument: <from>. Should be "yes" or "no".' "yes" "yes"
     exit 1
   fi
 }
