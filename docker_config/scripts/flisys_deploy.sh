@@ -66,7 +66,11 @@ function main() {
   usr_message "Deploy" "Welcome to FliSys deploy!" "no" "yes"
 
   # check operating system
-  check_os
+  is_linux
+  get_os
+
+  # set systemd
+  set_systemd
 
   # get command line arguments (if available)
   get_arguments "${@}"

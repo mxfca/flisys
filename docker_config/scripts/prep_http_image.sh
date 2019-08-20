@@ -68,7 +68,7 @@ function main() {
   check_bash_version "${OS_NAME}"
 
   if test -z "${PARAM_FROM_DEPLOY}" -o "${PARAM_FROM_DEPLOY}" != "yes"; then
-    get_os
+    is_linux
   fi
 
   set_environment
