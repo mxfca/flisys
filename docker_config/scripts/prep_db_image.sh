@@ -50,7 +50,6 @@ declare SERVER_CERT
 declare CLIENT_KEY
 declare CLIENT_REQ
 declare CLIENT_CERT
-declare ANOTHER_OS
 
 # Default Values
 # ################
@@ -66,7 +65,6 @@ SERVER_CERT="${DATABASE_PATH}/cert/mysql-server-cert.pem"
 CLIENT_KEY="${DATABASE_PATH}/cert/mysql-client-key.pem"
 CLIENT_REQ="${DATABASE_PATH}/cert/mysql-client-req.pem"
 CLIENT_CERT="${DATABASE_PATH}/cert/mysql-client-cert.pem"
-ANOTHER_OS="Linux"
 
 # Add auxiliary script
 # ################
