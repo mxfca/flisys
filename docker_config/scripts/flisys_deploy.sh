@@ -115,7 +115,8 @@ function main() {
 function get_arguments() {
   # check if have something to process
   if test "${#}" -eq 0; then
-    return
+    usr_message "Deploy" "Missing argument <environment>" "yes" "yes"
+    exit 1
   fi
 
   # get arguments
