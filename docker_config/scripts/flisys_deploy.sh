@@ -60,7 +60,6 @@ PARAM_FROM_DEPLOY="yes"
 # ################
 function main() {
   local bin_bash
-  local caller_script
 
   # welcome
   usr_message "Deploy" "Welcome to FliSys deploy!" "no" "yes"
@@ -87,19 +86,11 @@ function main() {
 
   # prepare http data
   usr_message "Deploy" "Starting preparation for FliSys HTTP Docker Image"  "yes" "no"
-  caller_script="${bin_bash} $(filter_path "${SCRIPT_PATH}")/prep_http_image.sh --environment=${FLISYS_ENVIRONMENT} --from=${PARAM_FROM_DEPLOY}"
-  if test ! -z "${OS_NAME}"; then
-    caller_script="${caller_script} --osystem=${OS_NAME}"
-  fi
-  eval "${caller_script}"
+  eval "${bin_bash} $(filter_path "${SCRIPT_PATH}")/prep_http_image.sh --environment=${FLISYS_ENVIRONMENT} --from=${PARAM_FROM_DEPLOY}"
 
   # prepare database data
   usr_message "Deploy" "Starting preparation for FliSys Database Docker Image"  "yes" "no"
-  caller_script="${bin_bash} ${SCRIPT_PATH}/prep_db_image.sh --environment=${FLISYS_ENVIRONMENT}"
-  if test ! -z "${OS_NAME}"; then
-    caller_script="${caller_script} --osystem=${OS_NAME}"
-  fi
-  eval "${caller_script}"
+  eval "${bin_bash} ${SCRIPT_PATH}/prep_db_image.sh --environment=${FLISYS_ENVIRONMENT} --from=${PARAM_FROM_DEPLOY}"
 
   # generate images
 
