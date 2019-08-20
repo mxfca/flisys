@@ -170,12 +170,12 @@ function filter_path() {
   echo "${1/ /\\ }"
 }
 
-# Check if a given path exists
+# @brief Check if a given path exists
+# @param string Path to be checked
+# @return Path on success, Blank if it not exists
 function path_exists() {
-  # check if have something to process
   if test "${#}" -eq 0; then
-    echo "Impossible to check if path exists. Invalid parameters. Exiting..."
-    exit 1
+    return
   fi
 
   if test -d "${1}"; then
@@ -183,12 +183,12 @@ function path_exists() {
   fi
 }
 
-# Check if file exists in a given path
+# @brief Check if file exists in a given path
+# @param string File including its path to be checked
+# @return Path on success, Blank if it not exists
 function file_exists() {
-  # check if have something to process
   if test "${#}" -eq 0; then
-    echo "Impossible to check if a file exists. Invalid parameters. Exiting..."
-    exit 1
+    return
   fi
 
   if test -f "${1}"; then

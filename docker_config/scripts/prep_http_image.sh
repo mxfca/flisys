@@ -46,6 +46,7 @@ declare CONTAINER_ENVIRONMENT
 # ################
 SCRIPT_PATH="$(cd "$(dirname "${0}")" && pwd -P)"
 HTTP_PATH="$(dirname "${SCRIPT_PATH}")/http"
+DOCKER_FILE=""
 CONTAINER_ENVIRONMENT="production"
 
 # Add auxiliary script
