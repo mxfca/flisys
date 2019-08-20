@@ -89,8 +89,8 @@ function get_os() {
 function set_systemd() {
   BIN_SYSCTL="$(command -v systemctl || true)"
 
-  if test -z "${BIN_SYSCTL}"; then
-    usr_message "OS Check" "Service Management Tool (systemctl) was not found in this operating system. Exiting..."
+  if test -z "${BIN_SYSCTL}" -o ! -z "$(echo "${BIN_SYSCTL}" | grep -i "alias")"; then
+    usr_message "OS Check" "Service Management Tool (systemctl) was not found in this operating system. Exiting..." "yes" "yes"
     exit 1
   fi
 }
@@ -112,7 +112,7 @@ function get_file_value() {
 # @brief Check if machine is running a Linux Operating System
 function is_linux() {
   if test "$(uname | tr '[:upper:]' '[:lower:]')" != "linux"; then
-    echo "These automations is intend to run on a Linux machine. Exiting..."
+    usr_message "OS Check" "These automations is intend to run on a Linux machine. Exiting..." "yes" "yes"
     exit 1
   fi
 }
@@ -120,7 +120,7 @@ function is_linux() {
 # @brief Check Bash version
 function check_bash_version() {
   if test "${BASH_VERSION%%.*}" -lt "${MIN_BASH_VERSION}"; then
-    echo "FliSys Docker Images require at least Bash version ${MIN_BASH_VERSION} to run. Exiting..."
+    usr_message "Bash Check" "FliSys Docker Images require at least Bash version ${MIN_BASH_VERSION} to run. Exiting..."
     exit 1
   fi
 }
