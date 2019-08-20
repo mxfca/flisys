@@ -64,13 +64,12 @@ PARAM_FROM_DEPLOY="no"
 function main() {
   local image_main_version
 
+  # re-run some function in case to runnning as stand alone
+  is_linux
+  get_os
+  set_systemd
   get_arguments "${@}"
-  check_bash_version "${OS_NAME}"
-
-  if test -z "${PARAM_FROM_DEPLOY}" -o "${PARAM_FROM_DEPLOY}" != "yes"; then
-    is_linux
-  fi
-
+  check_bash_version
   set_environment
 
   if test -z "$(path_exists "${HTTP_PATH}")"; then
