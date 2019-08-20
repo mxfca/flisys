@@ -76,12 +76,10 @@ function main() {
   get_arguments "${@}"
 
   # check minimum bash version for linux
-  check_bash_version "${OS_NAME}"
+  check_bash_version
 
   # get bash binary path
-  bin_bash="$(command -v bash)"
-
-  # check error
+  bin_bash="$(get_bash)"
   if test -z "${bin_bash}"; then
     usr_message "Deploy" "Path to binary bash was not found. Exiting..."  "yes" "yes"
     exit 1

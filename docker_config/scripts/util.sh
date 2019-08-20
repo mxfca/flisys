@@ -155,6 +155,10 @@ function usr_message() {
   fi
 }
 
+function get_bash() {
+  command -v bash || true
+}
+
 # @brief Escape spaces in a path
 function filter_path() {
   # check if have something to process
