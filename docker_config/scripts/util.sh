@@ -57,67 +57,70 @@ export BIN_DOCKER
 export BIN_SYSCTL
 export USER_CHOICE
 
+# @brief Get the Operating System name
 function get_os() {
-  OS_NAME="$(uname)"
+  local name_os_raw
 
-  case "${OS_NAME}" in
-    Linux)
-        echo "Detected a Linux machine."
-        BIN_SYSCTL="$(command -v systemctl || true)"
-      ;;
-    Darwin)
-      echo "Detected a Mac machine."
-      BIN_SYSCTL="$(command -v launchctl || true)"
-      ;;
-    *)
-      usr_message "OS Check" "It was not possible to detect what operating system is running. Exiting..."
-      exit 1
-      ;;
-  esac
+  if test -e /etc/*-release; then
+    name_os_raw="$(get_file_value "NAME=" "/etc/*-release")"
+  else
+    usr_message "OS Check" "Your operating system is not supported to run this automation. Exiting..."
+    exit 1
+  fi
+
+  # check error
+  if test -z "${name_os_raw}"; then
+    usr_message "OS Check" "Your operating system is not supported to run this automation. Exiting..."
+    exit 1
+  fi
+
+  OS_NAME="$(echo "${name_os_raw}" |  awk -F'=' '{ print $2 }' | sed 's/"//g')"
+
+  # check error
+  if test -z "${OS_NAME}"; then
+    usr_message "OS Check" "Failed to collect Operating System Name. Exiting..."
+    exit 1
+  fi
+
+  usr_message "Using Linux" "${OS_NAME}" "no" "no"
+}
+
+# @brief Locale the path to systemctl binary
+function set_systemd() {
+  BIN_SYSCTL="$(command -v systemctl || true)"
 
   if test -z "${BIN_SYSCTL}"; then
-    usr_message "OS Check" "Service Management Tool was not found in this operating system. Exiting..."
+    usr_message "OS Check" "Service Management Tool (systemctl) was not found in this operating system. Exiting..."
     exit 1
   fi
 }
 
-function check_os() {
-  local osname
+# @brief Get a specific value based on regex from a file
+# @param string Regex
+# @param string File to get its values
+# @return string
+function get_file_value() {
+  # check if have something to process
+  if test "${#}" -ne 2; then
+    return
+  fi
 
-  osname="$(uname)"
+  # execute
+  eval "grep -E \"^${1}\" ${2} | head -n 1"
+}
 
-  if test "${osname}" != "Linux"; then
-    echo "These automations is intend to run on a Linux machine. You can try it at your own risk."
-    
-    ask_user "Are you sure to continue?"
-
-    # Check if user aswered it
-    if test -z "${USER_CHOICE}"; then
-      usr_message "OS Check" "You must choose a valid option, otherwise can not proceed. Exiting..." "yes" "yes"
-      exit 1
-    elif test "${USER_CHOICE}" = "n"; then
-      usr_message "OS Check" "You chose not to continue this automated process. Exiting..." "yes" "yes"
-      exit 0
-    fi
+# @brief Check if machine is running a Linux Operating System
+function is_linux() {
+  if test "$(uname | tr '[:upper:]' '[:lower:]')" != "linux"; then
+    echo "These automations is intend to run on a Linux machine. Exiting..."
+    exit 1
   fi
 }
 
-# Check Bash version
+# @brief Check Bash version
 function check_bash_version() {
-  local version
-
-  if test "${#}" -eq 0; then
-    echo "Invalid parameter during check bash version. Exiting..."
-    exit 1
-  fi
-
-  version="$(( MIN_BASH_VERSION - 1 ))"
-
-  if test "${1}" = "Linux" -a "${BASH_VERSION%%.*}" -lt "${MIN_BASH_VERSION}"; then
+  if test "${BASH_VERSION%%.*}" -lt "${MIN_BASH_VERSION}"; then
     echo "FliSys Docker Images require at least Bash version ${MIN_BASH_VERSION} to run. Exiting..."
-    exit 1
-  elif test "${1}" != "Linux" -a "${BASH_VERSION%%.*}" -lt "${version}"; then
-    echo "FliSys Docker Images require at least Bash version ${version} to run. Exiting..."
     exit 1
   fi
 }
@@ -243,6 +246,7 @@ function check_docker_service() {
   fi
 
   command_status="$(eval "${BIN_SYSCTL} status docker 2>/dev/null" | grep -i "active:" | awk -F ":" '{ print $2 }' | awk '{ print $1 }')"
+  echo "${command_status}"
 
   if test -z "${command_status}"; then
     echo "Failed to identify if docker service is running. Exiting..."
@@ -523,7 +527,8 @@ function docker_build_image() {
 # Export Global Functions
 # ###########################################################################
 export -f get_os
-export -f check_os
+export -f is_linux
+export -f set_systemd
 export -f check_bash_version
 export -f usr_message
 export -f filter_path
