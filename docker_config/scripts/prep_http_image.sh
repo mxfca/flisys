@@ -41,14 +41,14 @@ declare SCRIPT_PATH
 declare HTTP_PATH
 declare DOCKER_FILE
 declare CONTAINER_ENVIRONMENT
-declare ANOTHER_OS
+declare PARAM_FROM_DEPLOY
 
 # Default Values
 # ################
 SCRIPT_PATH="$(cd "$(dirname "${0}")" && pwd -P)"
 HTTP_PATH="$(dirname "${SCRIPT_PATH}")/http"
 CONTAINER_ENVIRONMENT="production"
-ANOTHER_OS=""
+PARAM_FROM_DEPLOY="no"
 
 # Add auxiliary script
 # ################
@@ -65,43 +65,39 @@ function main() {
   local image_main_version
 
   get_arguments "${@}"
+  check_bash_version "${OS_NAME}"
 
-  if test ! -z "$(is_linux)" -a -z "${ANOTHER_OS}"; then
-    is_linux
-    exit 1
+  if test -z "${PARAM_FROM_DEPLOY}" -o "${PARAM_FROM_DEPLOY}" != "yes"; then
+    get_os
   fi
 
-  if test -z "${ANOTHER_OS}"; then
-    check_bash_version
-  fi
-  
   set_environment
 
   if test -z "$(path_exists "${HTTP_PATH}")"; then
-    usr_message "Prep. HTTP" "Path to FliSys HTTP Service not found. Exiting..."
+    usr_message "Prep. HTTP" "Path to FliSys HTTP Service not found. Exiting..." "yes" "yes"
     exit 1
   fi
 
   if test -z "$(file_exists "${DOCKER_FILE}")"; then
-    usr_message "Prep. HTTP" "Dockerfile is missing in HTTP Service path. Exiting..."
+    usr_message "Prep. HTTP" "Dockerfile is missing in HTTP Service path. Exiting..." "yes" "yes"
     exit 1
   fi
 
   image_main_version="$(find_dockerfile_version "${DOCKER_FILE}")"
   if test -z "${image_main_version}"; then
-    usr_message "Prep. HTTP" "Invalid Dockerfile version of image. Exiting..."
+    usr_message "Prep. HTTP" "Invalid Dockerfile version of image. Exiting..." "yes" "yes"
     exit 1
   fi
 
   split_dockerfile_version "${image_main_version}"
 
   if test -z "${BIN_DOCKER}"; then
-    usr_message "Prep. HTTP" "Docker service is not installed or not in your environment variable. Exiting..."
+    usr_message "Prep. HTTP" "Docker service is not installed or not in your environment variable. Exiting..." "yes" "yes"
     exit 1
   fi
 
   if test -z "$(check_docker_service)"; then
-    usr_message "Prep. HTTP" "Docker service is not running. Please, start it before proceed."
+    usr_message "Prep. HTTP" "Docker service is not running. Please, start it before proceed." "yes" "no"
     echo -e "\tTry this command as root: systemctl start docker"
     echo "Exiting..."
     exit 1
@@ -114,10 +110,10 @@ function main() {
 
     # Check if user aswered it
     if test -z "${USER_CHOICE}"; then
-      usr_message "Prep. HTTP" "You must choose a valid option, otherwise can not proceed. Exiting..."
+      usr_message "Prep. HTTP" "You must choose a valid option, otherwise can not proceed. Exiting..." "yes" "yes"
       exit 1
     elif test "${USER_CHOICE}" = "n"; then
-      usr_message "Prep. HTTP" "You choosed not delete an image of FliSys HTTP Service that is at same version. In this case, it is impossible to proceed once it will be overwritten. Exiting..."
+      usr_message "Prep. HTTP" "You choosed not delete an image of FliSys HTTP Service that is at same version. In this case, it is impossible to proceed once it will be overwritten. Exiting..." "yes" "yes"
       exit 0
     fi
 
@@ -131,28 +127,25 @@ function main() {
 
   # Check user answer
   if test -z "${USER_CHOICE}"; then
-    usr_message "Prep. HTTP" "You must choose a valid option, otherwise can not proceed. Exiting..."
+    usr_message "Prep. HTTP" "You must choose a valid option, otherwise can not proceed. Exiting..." "no" "yes"
     exit 1
   elif test "${USER_CHOICE}" = "y"; then
     prep_proxy
   else
-    usr_message "Prep. HTTP" "User informed that proxy is not required to be set to run FliSys HTTP Container."
+    usr_message "Prep. HTTP" "User informed that proxy is not required to be set to run FliSys HTTP Container." "no" "yes"
   fi
 
   # generate self signed certificate
-  echo ""
-  usr_message "Auto Signed Web Certificate" ""
-  usr_message "Prep. HTTP" "Even if you already have your own web certificate, it is necessary to create one only during docker image generation."
+  usr_message "Auto Signed Web Certificate" " "  "no" "no"
+  usr_message "Prep. HTTP" "Even if you already have your own web certificate, it is necessary to create one during docker image generation." "no" "yes"
   prep_web_cert
 
   # configure volumes
-  echo ""
-  usr_message "Shared Directory" ""
+  usr_message "Shared Directory" " " "yes" "no"
   prep_shared_dir
 
   # all done
-  echo ""
-  usr_message "Prep. HTTP" "All set to FliSys HTTP Image."
+  usr_message "Prep. HTTP" "All set to FliSys HTTP Image." "yes" "yes"
 }
 
 function set_environment() {
@@ -162,10 +155,10 @@ function set_environment() {
 
   if test ! -z "$(echo "${CONTAINER_ENVIRONMENT}" | grep -E 'production')"; then
     DOCKER_FILE="${file_path}/Dockerfile"
-    usr_message "Prep. HTTP" "Set environment as Production"
+    usr_message "Prep. HTTP" "Set environment as Production" "no" "yes"
   else
     DOCKER_FILE="${file_path}/Dockerfile-dev"
-    usr_message "Prep. HTTP" "Set environment as Development"
+    usr_message "Prep. HTTP" "Set environment as Development" "no" "yes"
   fi
 }
 
@@ -179,7 +172,7 @@ function prep_proxy() {
 
   # check error
   if test -z "${bin_sed}"; then
-    usr_message "Prep. HTTP" "SED is not installed or not able to use. Aborting proxy step..."
+    usr_message "Prep. HTTP" "SED is not installed or not able to use. Aborting proxy step..." "yes" "yes"
     return
   fi
 
@@ -189,15 +182,15 @@ function prep_proxy() {
 
   # check answer
   if test -z "${proxy_uri}"; then
-    usr_message "Prep. HTTP" "No proxy URI informed. Aborting proxy step..."
+    usr_message "Prep. HTTP" "No proxy URI informed. Aborting proxy step..." "yes" "yes"
     return
   elif test ! -z "$(echo "${proxy_uri}" | tr '[:upper:]' '[:lower:]' | grep -E '^https://')"; then
-    usr_message "Prep. HTTP" "HTTPS is reserved for internal tasks. Aborting proxy step..."
+    usr_message "Prep. HTTP" "HTTPS is reserved for internal tasks. Aborting proxy step..." "yes" "yes"
     return
   elif test ! -z "$(echo "${proxy_uri}" | tr '[:upper:]' '[:lower:]' | grep -E '^http://')" -a ! -z "$(check_proxy_uri "${proxy_uri}")"; then
-    usr_message "Prep. HTTP" "Proxy URI is ${proxy_uri}"
+    usr_message "Prep. HTTP" "Proxy URI is ${proxy_uri}" "no" "yes"
   else
-    usr_message "Prep. HTTP" "Another protocol beyond HTTP should be set manually in Dockerfile. Aborting proxy step..."
+    usr_message "Prep. HTTP" "Another protocol beyond HTTP should be set manually in Dockerfile. Aborting proxy step..." "yes" "yes"
     return
   fi
 
@@ -206,7 +199,7 @@ function prep_proxy() {
 
   # check error
   if test ! -z "${output}"; then
-    usr_message "Prep. HTTP" "Failed to apply proxy data with error:\n\t${output}"
+    usr_message "Prep. HTTP" "Failed to apply proxy data with error:\n\t${output}" "yes" "yes"
   fi
 }
 
@@ -266,22 +259,27 @@ function prep_web_cert() {
 
   # apply Country
   str_tmp="$(echo "${c_country}" | tr '[:lower:]' '[:upper:]')"
+  echo "${str_tmp}"
   apply_cert_data "${str_tmp}" "C="
   
   # apply State
   str_tmp="$(echo "${c_state}" | tr '[:lower:]' '[:upper:]')"
+  echo "${str_tmp}"
   apply_cert_data "${str_tmp}" "ST="
 
   # apply Location
   str_tmp="$(echo "${c_location}" | tr '[:lower:]' '[:upper:]')"
+  echo "${str_tmp}"
   apply_cert_data "${str_tmp}" "L="
 
   # apply Organization
   str_tmp="$(echo "${c_organization}" | tr '[:lower:]' '[:upper:]')"
+  echo "${str_tmp}"
   apply_cert_data "${str_tmp}" "O="
 
   # apply Domain
   str_tmp="$(echo "${c_commonname}" | tr '[:upper:]' '[:lower:]')"
+  echo "${str_tmp}"
   apply_cert_data "${str_tmp}" "CN="
 }
 
@@ -290,33 +288,33 @@ function chk_cert() {
 
   # check if have something to process
   if test "${#}" -ne 2; then
-    usr_message "Prep. HTTP" "Invalid value during web certificate checking. Exiting..."
+    usr_message "Prep. HTTP" "Invalid value during web certificate checking. Exiting..." "yes" "yes"
     exit 1
   fi
 
   if test -z "${2}"; then
-    usr_message "Prep. HTTP" "Invalid value of ${1}. Exiting..."
+    usr_message "Prep. HTTP" "Invalid value of ${1}. Exiting..." "no" "yes"
     exit 1
   fi
 
   case "${1}" in
     "Country")
-      output="$(echo "${2}" | grep -E '^[a-zA-Z]{2}$'|| true)"
+      output="$(echo "${2}" | grep -E '^[a-zA-Z]{2}$' || true)"
       ;;
     "State")
-      output="$(echo "${2}" | grep -E '^[a-zA-Z]{2}$'|| true)"
+      output="$(echo "${2}" | grep -E '^[a-zA-Z]{2}$' || true)"
       ;;
     "City")
-      output="$(echo "${2}" | grep -E '^[a-zA-Z0-9]+$'|| true)"
+      output="$(echo "${2}" | grep -E '^[a-zA-Z0-9]+$' || true)"
       ;;
     "Company")
-      output="$(echo "${2}" | grep -E '^[a-zA-Z0-9]+$'|| true)"
+      output="$(echo "${2}" | grep -E '^[a-zA-Z0-9]+$' || true)"
       ;;
     "Domain")
-      output="$(echo "${2}" | grep -E '^[a-zA-Z0-9/_\.-]+$'|| true)"
+      output="$(echo "${2}" | grep -E '^[a-zA-Z0-9/_\.-]+$' || true)"
       ;;
     "SystemLogs")
-      output="$(echo "${2}" | grep -E '^[a-zA-Z0-9/_\.-]+$'|| true)"
+      output="$(echo "${2}" | grep -E '^[a-zA-Z0-9/_\.-]+$' || true)"
       ;;
     "ExternalConfiguration")
       output="$(echo "${2}" | grep -E '^[a-zA-Z0-9/_\.-]+$' || true)"
@@ -327,7 +325,7 @@ function chk_cert() {
   esac
 
   if test -z "${output}"; then
-    usr_message "Prep. HTTP" "Invalid value format of ${1}. Exiting..."
+    usr_message "Prep. HTTP" "Invalid value format of ${1}. Exiting..." "yes" "yes"
     exit 1
   fi
 }
@@ -337,30 +335,32 @@ function apply_cert_data() {
   local file_path
   local output
 
+  echo "apply_cert_data"
+
   # check if have something to process
   if test "${#}" -ne 2; then
-    usr_message "Prep. HTTP" "Invalid value while saving web certificate data. Exiting..."
+    usr_message "Prep. HTTP" "Invalid value while saving web certificate data. Exiting..." "yes" "yes"
     exit 1
   fi
 
   # get binary path
-  bin_sed="$(command -v sed)"
+  bin_sed="$(command -v sed || true)"
 
   # check error
   if test -z "${bin_sed}"; then
-    usr_message "Prep. HTTP" "SED is not installed or not able to use. Aborting..."
+    usr_message "Prep. HTTP" "SED is not installed or not able to use. Aborting..." "yes" "yes"
     return
   fi
 
   # set path
-  file_path="${HTTP_PATH}/gen.cert"
+  file_path="$(filter_path "${HTTP_PATH}")/gen.cert"
 
   # execute change
-  output="$(eval "${bin_sed} -i \"/${2}/c\${2}\\\"${1}\\\"\" ${file_path} 2>&1")"
+  output="$(eval "${bin_sed} -i \"/${2}/c\${2}\\\"${1}\\\"\" ${file_path} 2>&1 || true")"
 
   # check error
   if test ! -z "${output}"; then
-    usr_message "Prep. HTTP" "Failed to apply data with error:\n\t${output}"
+    usr_message "Prep. HTTP" "Failed to apply data with error:\n\t${output}" "yes" "yes"
     exit 1
   fi
 }
@@ -371,9 +371,8 @@ function prep_shared_dir() {
   local d_certificate
 
   # welcome
-  usr_message "Welcome to Shared Directory Wizard" ""
-  usr_message "Shared Dir." "In order to avoid data losing, it is necessary to set some paths to safe save the data. These paths must already exists."
-  echo ""
+  usr_message "Welcome to Shared Directory Wizard" " "  "yes" "no"
+  usr_message "Shared Dir." "In order to avoid data losing, it is necessary to set some paths to safe save the data. These paths must already exists." "no" "yes"
 
   # ask user
   echo -n "Path to System Logs: "
@@ -382,7 +381,7 @@ function prep_shared_dir() {
   # check error
   chk_cert "SystemLogs" "${d_log}"
   if test -z "$(path_exists "${d_log}")"; then
-    usr_message "Shared Dir." "System Log directory does not exists. Exiting..."
+    usr_message "Shared Dir." "System Log directory does not exists. Exiting..." "yes" "yes"
     exit 1
   fi
 
@@ -393,7 +392,7 @@ function prep_shared_dir() {
   # check error
   chk_cert "ExternalConfiguration" "${d_extconf}"
   if test -z "$(path_exists "${d_extconf}")"; then
-    usr_message "Shared Dir." "External Configuration directory does not exists. Exiting..."
+    usr_message "Shared Dir." "External Configuration directory does not exists. Exiting..." "yes" "yes"
     exit 1
   fi
 
@@ -404,7 +403,7 @@ function prep_shared_dir() {
   # check error
   chk_cert "WebCertificate" "${d_certificate}"
   if test -z "$(path_exists "${d_certificate}")"; then
-    usr_message "Shared Dir." "Web Certificate directory does not exists. Exiting..."
+    usr_message "Shared Dir." "Web Certificate directory does not exists. Exiting..." "yes" "yes"
     exit 1
   fi
 
@@ -421,7 +420,7 @@ function apply_vol_data() {
 
   # check if have something to process
   if test "${#}" -ne 2; then
-    usr_message "Prep. Shared Dir." "Invalid value while saving shared directory path. Exiting..."
+    usr_message "Prep. Shared Dir." "Invalid value while saving shared directory path. Exiting..." "yes" "yes"
     exit 1
   fi
 
@@ -430,7 +429,7 @@ function apply_vol_data() {
 
   # check error
   if test -z "${bin_sed}"; then
-    usr_message "Prep. Shared Dir." "SED is not installed or not able to use. Aborting..."
+    usr_message "Prep. Shared Dir." "SED is not installed or not able to use. Aborting..." "yes" "yes"
     return
   fi
 
@@ -442,7 +441,7 @@ function apply_vol_data() {
 
   # check error
   if test ! -z "${output}"; then
-    usr_message "Prep. Shared Dir." "Failed to apply data with error:\n\t${output}"
+    usr_message "Prep. Shared Dir." "Failed to apply data with error:\n\t${output}" "yes" "yes"
     exit 1
   fi
 }
@@ -461,14 +460,19 @@ function get_arguments() {
   while test "${#}" -gt 0; do
     case "${1}" in
       --environment=*) CONTAINER_ENVIRONMENT="$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')"; shift 1;; # string
-      --osystem=*) ANOTHER_OS="$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')"; shift 1;; # string
-      *) usr_message "Prep. HTTP" "Unknown option: ${1}"; exit 1;;
+      --from=*) PARAM_FROM_DEPLOY="$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')"; shift 1;; # string
+      *) usr_message "Prep. HTTP" "Unknown option: ${1}" "yes" "yes"; exit 1;;
     esac
   done
 
   # check for error
   if test -z "${CONTAINER_ENVIRONMENT}" -o -z "$(echo "${CONTAINER_ENVIRONMENT}" | grep -E '(production|development)')"; then
-    usr_message "Prep. HTTP" 'Invalid argument: <environment>. Should be "production" or "development".'
+    usr_message "Prep. HTTP" 'Invalid argument: <environment>. Should be "production" or "development".' "yes" "yes"
+    exit 1
+  fi
+
+  if test -z "${PARAM_FROM_DEPLOY}" -o -z "$(echo "${PARAM_FROM_DEPLOY}" | grep -E '(yes|no)')"; then
+    usr_message "Prep. HTTP" 'Invalid argument: <from>. Should be "yes" or "no".' "yes" "yes"
     exit 1
   fi
 }

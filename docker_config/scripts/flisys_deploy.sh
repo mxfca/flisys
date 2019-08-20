@@ -39,13 +39,13 @@ fi
 # ################
 declare SCRIPT_PATH
 declare FLISYS_ENVIRONMENT
-declare ANOTHER_OS
+declare PARAM_FROM_DEPLOY
 
 # Default Values
 # ################
 SCRIPT_PATH="$(cd "$(dirname "${0}")" && pwd -P)"
 FLISYS_ENVIRONMENT="production"
-ANOTHER_OS=""
+PARAM_FROM_DEPLOY="yes"
 
 # Add auxiliary script
 # ################
@@ -63,43 +63,39 @@ function main() {
   local caller_script
 
   # welcome
-  usr_message "Deploy" "Welcome to FliSys deploy!"
+  usr_message "Deploy" "Welcome to FliSys deploy!" "no" "yes"
+
+  # check operating system
+  check_os
 
   # get command line arguments (if available)
   get_arguments "${@}"
 
-  if test ! -z "$(is_linux)" -a -z "${ANOTHER_OS}"; then
-    is_linux
-    exit 1
-  fi
-
   # check minimum bash version for linux
-  if test -z "${ANOTHER_OS}"; then
-    check_bash_version
-  fi
+  check_bash_version "${OS_NAME}"
 
   # get bash binary path
   bin_bash="$(command -v bash)"
 
   # check error
   if test -z "${bin_bash}"; then
-    usr_message "Deploy" "Path to binary bash was not found. Exiting..."
+    usr_message "Deploy" "Path to binary bash was not found. Exiting..."  "yes" "yes"
     exit 1
   fi
-  
+
   # prepare http data
-  usr_message "Deploy" "Starting preparation for FliSys HTTP Docker Image"
-  caller_script="${bin_bash} ${SCRIPT_PATH}/prep_http_image.sh --environment=${FLISYS_ENVIRONMENT}"
-  if test ! -z "${ANOTHER_OS}"; then
-    caller_script="${caller_script} --osystem=${ANOTHER_OS}"
+  usr_message "Deploy" "Starting preparation for FliSys HTTP Docker Image"  "yes" "no"
+  caller_script="${bin_bash} $(filter_path "${SCRIPT_PATH}")/prep_http_image.sh --environment=${FLISYS_ENVIRONMENT} --from=${PARAM_FROM_DEPLOY}"
+  if test ! -z "${OS_NAME}"; then
+    caller_script="${caller_script} --osystem=${OS_NAME}"
   fi
   eval "${caller_script}"
 
   # prepare database data
-  usr_message "Deploy" "Starting preparation for FliSys Database Docker Image"
+  usr_message "Deploy" "Starting preparation for FliSys Database Docker Image"  "yes" "no"
   caller_script="${bin_bash} ${SCRIPT_PATH}/prep_db_image.sh --environment=${FLISYS_ENVIRONMENT}"
-  if test ! -z "${ANOTHER_OS}"; then
-    caller_script="${caller_script} --osystem=${ANOTHER_OS}"
+  if test ! -z "${OS_NAME}"; then
+    caller_script="${caller_script} --osystem=${OS_NAME}"
   fi
   eval "${caller_script}"
 
@@ -122,14 +118,13 @@ function get_arguments() {
   while test "${#}" -gt 0; do
     case "${1}" in
       --environment=*) FLISYS_ENVIRONMENT="$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')"; shift 1;; # string
-      --osystem=*) ANOTHER_OS="$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')"; shift 1;; # string
-      *) usr_message "Deploy" "Unknown option: ${1}"; exit 1;;
+      *) usr_message "Deploy" "Unknown option: ${1}" "yes" "yes"; exit 1;;
     esac
   done
 
   # check for error
   if test -z "${FLISYS_ENVIRONMENT}" -o -z "$(echo "${FLISYS_ENVIRONMENT}" | grep -E '(production|development)')"; then
-    usr_message "Deploy" 'Invalid argument: <environment>. Should be "production" or "development".'
+    usr_message "Deploy" 'Invalid argument: <environment>. Should be "production" or "development".' "yes" "yes"
     exit 1
   fi
 }

@@ -29,6 +29,7 @@
 
 # Global Variables
 # ###########################################################################
+declare OS_NAME
 declare MIN_BASH_VERSION
 declare DOCKERF_VER_MAJOR
 declare DOCKERF_VER_MID
@@ -48,6 +49,7 @@ DOCKERF_VER_MINOR=''
 USER_CHOICE=''
 
 # Set default values for external
+export OS_NAME
 export IMAGE_HTTP='flisys/http'
 export IMAGE_DATABASE='flisys/database'
 BIN_DOCKER="$(command -v docker)"
@@ -55,30 +57,110 @@ export BIN_DOCKER
 export BIN_SYSCTL
 export USER_CHOICE
 
-function is_linux() {
-  if test "$(uname)" != 'Linux'; then
-    echo "This deploy process is intend to run on Linux. You can try it at your own risk. Exiting..."
-    echo "Use parameter --osystem=<OS_NAME> to avoid this message."
-  else
-    BIN_SYSCTL="$(command -v systemctl)"
+function get_os() {
+  OS_NAME="$(uname)"
+
+  case "${OS_NAME}" in
+    Linux)
+        echo "Detected a Linux machine."
+        BIN_SYSCTL="$(command -v systemctl || true)"
+      ;;
+    Darwin)
+      echo "Detected a Mac machine."
+      BIN_SYSCTL="$(command -v launchctl || true)"
+      ;;
+    *)
+      usr_message "OS Check" "It was not possible to detect what operating system is running. Exiting..."
+      exit 1
+      ;;
+  esac
+
+  if test -z "${BIN_SYSCTL}"; then
+    usr_message "OS Check" "Service Management Tool was not found in this operating system. Exiting..."
+    exit 1
+  fi
+}
+
+function check_os() {
+  local osname
+
+  osname="$(uname)"
+
+  if test "${osname}" != "Linux"; then
+    echo "These automations is intend to run on a Linux machine. You can try it at your own risk."
+    
+    ask_user "Are you sure to continue?"
+
+    # Check if user aswered it
+    if test -z "${USER_CHOICE}"; then
+      usr_message "OS Check" "You must choose a valid option, otherwise can not proceed. Exiting..." "yes" "yes"
+      exit 1
+    elif test "${USER_CHOICE}" = "n"; then
+      usr_message "OS Check" "You chose not to continue this automated process. Exiting..." "yes" "yes"
+      exit 0
+    fi
   fi
 }
 
 # Check Bash version
 function check_bash_version() {
-  if test "${BASH_VERSION%%.*}" -lt "${MIN_BASH_VERSION}"; then
-    echo "FliSys Docker Images require at least Bash version 3 to run. Exiting..."
+  local version
+
+  if test "${#}" -eq 0; then
+    echo "Invalid parameter during check bash version. Exiting..."
+    exit 1
+  fi
+
+  version="$(( MIN_BASH_VERSION - 1 ))"
+
+  if test "${1}" = "Linux" -a "${BASH_VERSION%%.*}" -lt "${MIN_BASH_VERSION}"; then
+    echo "FliSys Docker Images require at least Bash version ${MIN_BASH_VERSION} to run. Exiting..."
+    exit 1
+  elif test "${1}" != "Linux" -a "${BASH_VERSION%%.*}" -lt "${version}"; then
+    echo "FliSys Docker Images require at least Bash version ${version} to run. Exiting..."
     exit 1
   fi
 }
 
+# @brief Print a message to user
+# @param
+#   - 1) Module name
+#   - 2) A message to user
+#   - 3) Use new line before message
+#   - 4) Use new line after message
 function usr_message() {
   # check if have something to process
-  if test "${#}" -ne 2; then
+  if test "${#}" -ne 4; then
     return
   fi
 
+  # print new line before
+  if test ! -z "${3}"; then
+    if test "${3}" = "yes"; then
+      printf "\n"
+    fi
+  fi
+
+  # print message
   printf "%s: %s\n" "${1}" "${2}"
+
+  # print new line after
+  if test ! -z "${4}"; then
+    if test "${4}" = "yes"; then
+      printf "\n"
+    fi
+  fi
+}
+
+# @brief Escape spaces in a path
+function filter_path() {
+  # check if have something to process
+  if test "${#}" -eq 0; then
+    echo "Invalid internal parameters. Exiting..."
+    exit 1
+  fi
+
+  echo "${1/ /\\ }"
 }
 
 # Check if a given path exists
@@ -440,8 +522,11 @@ function docker_build_image() {
 
 # Export Global Functions
 # ###########################################################################
+export -f get_os
+export -f check_os
 export -f check_bash_version
 export -f usr_message
+export -f filter_path
 export -f path_exists
 export -f file_exists
 export -f find_dockerfile_version

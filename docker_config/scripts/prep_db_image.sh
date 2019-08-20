@@ -50,6 +50,7 @@ declare SERVER_CERT
 declare CLIENT_KEY
 declare CLIENT_REQ
 declare CLIENT_CERT
+declare ANOTHER_OS
 
 # Default Values
 # ################
@@ -65,6 +66,7 @@ SERVER_CERT="${DATABASE_PATH}/cert/mysql-server-cert.pem"
 CLIENT_KEY="${DATABASE_PATH}/cert/mysql-client-key.pem"
 CLIENT_REQ="${DATABASE_PATH}/cert/mysql-client-req.pem"
 CLIENT_CERT="${DATABASE_PATH}/cert/mysql-client-cert.pem"
+ANOTHER_OS="Linux"
 
 # Add auxiliary script
 # ################
@@ -80,8 +82,13 @@ CLIENT_CERT="${DATABASE_PATH}/cert/mysql-client-cert.pem"
 function main() {
   local image_main_version
 
-  check_bash_version
   get_arguments "${@}"
+  check_bash_version "${OS_NAME}"
+
+  if test -z "${PARAM_FROM_DEPLOY}" -o "${PARAM_FROM_DEPLOY}" != "yes"; then
+    get_os
+  fi
+
   set_environment
 
   if test -z "$(path_exists "${DATABASE_PATH}")"; then
