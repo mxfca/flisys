@@ -39,18 +39,16 @@ fi
 # ################
 declare SCRIPT_PATH
 declare FLISYS_ENVIRONMENT
-declare PARAM_FROM_DEPLOY
 
 # Default Values
 # ################
 SCRIPT_PATH="$(cd "$(dirname "${0}")" && pwd -P)"
 FLISYS_ENVIRONMENT="production"
-PARAM_FROM_DEPLOY="yes"
 
 # Add auxiliary script
 # ################
 # shellcheck source=/dev/null
-. "${SCRIPT_PATH}/util.sh"
+source util.sh
 
 # ########################################################################## #
 # Execution
@@ -86,11 +84,11 @@ function main() {
 
   # prepare http data
   usr_message "Deploy" "Starting preparation for FliSys HTTP Docker Image"  "yes" "no"
-  eval "${bin_bash} $(filter_path "${SCRIPT_PATH}")/prep_http_image.sh --environment=${FLISYS_ENVIRONMENT} --from=${PARAM_FROM_DEPLOY}"
+  eval "${bin_bash} $(filter_path "${SCRIPT_PATH}")/prep_http_image.sh --environment=${FLISYS_ENVIRONMENT}"
 
   # prepare database data
   usr_message "Deploy" "Starting preparation for FliSys Database Docker Image"  "yes" "no"
-  eval "${bin_bash} ${SCRIPT_PATH}/prep_db_image.sh --environment=${FLISYS_ENVIRONMENT} --from=${PARAM_FROM_DEPLOY}"
+  eval "${bin_bash} ${SCRIPT_PATH}/prep_db_image.sh --environment=${FLISYS_ENVIRONMENT}"
 
   # generate images
 
