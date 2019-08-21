@@ -52,7 +52,7 @@ USER_CHOICE=''
 export OS_NAME
 export IMAGE_HTTP='flisys/http'
 export IMAGE_DATABASE='flisys/database'
-BIN_DOCKER="$(command -v docker)"
+BIN_DOCKER="$(command -v docker || true)"
 export BIN_DOCKER
 export BIN_SYSCTL
 export USER_CHOICE
