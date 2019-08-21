@@ -96,8 +96,8 @@ function main() {
 
   if test -z "$(check_docker_service)"; then
     usr_message "Prep. HTTP" "Docker service is not running. Please, start it before proceed." "yes" "no"
-    echo -e "\tTry this command as root: systemctl start docker"
-    echo "Exiting..."
+    printf "\tTry this command as root: systemctl start docker\n"
+    printf "Exiting...\n\n"
     exit 1
   fi
 
