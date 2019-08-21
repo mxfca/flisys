@@ -48,7 +48,7 @@ FLISYS_ENVIRONMENT="production"
 # Add auxiliary script
 # ################
 # shellcheck source=/dev/null
-source util.sh
+source "${SCRIPT_PATH}/util.sh"
 
 # ########################################################################## #
 # Execution
