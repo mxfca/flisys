@@ -250,14 +250,12 @@ function check_docker_service() {
   fi
 
   command_status="$(eval "${BIN_SYSCTL} status docker 2>/dev/null" | grep -i "active:" | awk -F ":" '{ print $2 }' | awk '{ print $1 }')"
-  echo "${command_status}"
 
   if test -z "${command_status}"; then
-    echo "Failed to identify if docker service is running. Exiting..."
-    exit 1
+    return
   elif test "${command_status}" != "active"; then
     # just print blank line to fail on caller
-    echo ""
+    return
   else
     # Docker service is up and running
     echo "${command_status}"
