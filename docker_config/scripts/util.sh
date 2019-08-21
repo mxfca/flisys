@@ -254,7 +254,6 @@ function check_docker_service() {
   if test -z "${command_status}"; then
     return
   elif test "${command_status}" != "active"; then
-    # just print blank line to fail on caller
     return
   else
     # Docker service is up and running
