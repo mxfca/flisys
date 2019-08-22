@@ -39,11 +39,13 @@ fi
 # ################
 declare SCRIPT_PATH
 declare FLISYS_ENVIRONMENT
+declare BIN_BASH
 
 # Default Values
 # ################
 SCRIPT_PATH="$(cd "$(dirname "${0}")" && pwd -P)"
 FLISYS_ENVIRONMENT="production"
+BIN_BASH=""
 
 # Add auxiliary script
 # ################
@@ -57,8 +59,6 @@ source "${SCRIPT_PATH}/util.sh"
 # Startup function
 # ################
 function main() {
-  local bin_bash
-
   # welcome
   usr_message "Deploy" "Welcome to FliSys deploy!" "no" "yes"
 
@@ -76,23 +76,28 @@ function main() {
   check_bash_version
 
   # get bash binary path
-  bin_bash="$(get_bash)"
-  if test -z "${bin_bash}"; then
-    usr_message "Deploy" "Path to binary bash was not found. Exiting..."  "yes" "yes"
-    exit 1
-  fi
+  load_bash
 
   # prepare http data
   usr_message "Deploy" "Starting preparation for FliSys HTTP Docker Image"  "yes" "no"
-  eval "${bin_bash} $(filter_path "${SCRIPT_PATH}")/prep_http_image.sh --environment=${FLISYS_ENVIRONMENT}"
+  eval "${BIN_BASH} $(filter_path "${SCRIPT_PATH}")/prep_http_image.sh --environment=${FLISYS_ENVIRONMENT}"
 
   # prepare database data
   usr_message "Deploy" "Starting preparation for FliSys Database Docker Image"  "yes" "no"
-  eval "${bin_bash} ${SCRIPT_PATH}/prep_db_image.sh --environment=${FLISYS_ENVIRONMENT}"
+  eval "${BIN_BASH} ${SCRIPT_PATH}/prep_db_image.sh --environment=${FLISYS_ENVIRONMENT}"
 
   # generate images
 
   # deploy containers
+}
+
+function load_bash() {
+  BIN_BASH="$(get_bash)"
+  
+  if test -z "${BIN_BASH}"; then
+    usr_message "Deploy" "Path to Bash was not found. Exiting..."  "yes" "yes"
+    exit 1
+  fi
 }
 
 # ########################################################################## #
