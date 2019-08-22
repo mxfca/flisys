@@ -4,7 +4,7 @@ In this section you will find all resources required to run FliSys in a Docker C
 
 > IMPORTANT: if you do not have a dedicated server or already have a web server (shared hosting), you does not need nothing from this section.
 
-## Pre Requirements
+## Prerequisites
 
 You'll need some installed packages in the machine you'll generate the Docker Containers, as follows:
 
