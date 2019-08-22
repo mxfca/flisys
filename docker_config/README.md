@@ -14,6 +14,8 @@ You'll need some installed packages in the machine you'll generate the Docker Co
   - Docker
   - Docker Compose
 
+Once Docker can run in a variety of operating systems, the deployment automation covered here is designed to be used on a Linux machine. If you're using any other operating system, you'll need to do all the configuration steps by your own hands.
+
 ## Step 01
 
 Goes to _docker_config/scripts_ directory:
