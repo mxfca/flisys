@@ -13,8 +13,23 @@ You'll need some installed packages in the machine you'll generate the Docker Co
   - Systemctl
   - Docker
   - Docker Compose
+  - Some directories to be shared with the container
 
 Once Docker can run in a variety of operating systems, the deployment automation covered here is designed to be used on a Linux machine. If you're using any other operating system, you'll need to do all the configuration steps by your own hands.
+
+## Step 00
+
+First of all, you'll need to create some directories in order to FliSys save data that cannot be lost, such as: basic configurations, certificates, users and events data. Using these directories, you're free to update/upgrade FliSys container at any time whitout data losing, this is know as layers separations (application layer, data layer, etc).
+
+Below you can check all of these directories needed:
+
+  - HTTP and FliSys logs
+  - Web Certificates
+  - FliSys basic configurations
+
+These three directories is responsible to hold custom data files that is specific for your environment, you should back-up them in a regular basis.
+
+Once created all of them, it can be in a convenient path and naming to you, you're able to proceed to the next step.
 
 ## Step 01
 
